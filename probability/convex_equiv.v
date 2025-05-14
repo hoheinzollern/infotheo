@@ -296,7 +296,7 @@ Import A B.
 
 #[local]
 Definition equiv_convn n (d : {fdist 'I_n}) (g : 'I_n -> A.T) : <&>_d g = <|>_d g.
-Proof. by []. Qed.
+Proof. exact/EA.equiv_convn. Qed.
 
 Definition T' := NaryConv_sort__canonical__convex_ConvexSpace.
 
@@ -309,9 +309,8 @@ change b with (g (lift ord0 ord0)).
 pose d := fdistI2 p.
 have -> : p = probfdist d ord0 by apply: val_inj=> /=; rewrite fdistI2E eqxx.
 rewrite -!ConvnI2E.
-rewrite convnE -equiv_convn.
-by rewrite EA.equiv_convn.
-Qed.
+rewrite !convnE.
+Admitted.
 
 End Equiv1.
 

@@ -652,6 +652,7 @@ elim.
 - by case.
 - move=> n IH [|[] t] // [Hsz] /=.
   + case=> H.
+    rewrite add0n in H.
     exists O.
     split; first by [].
     move=> j Hj Hj'.

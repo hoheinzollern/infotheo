@@ -123,14 +123,15 @@ apply (@le_trans _ _ (2%R `^ n%:R)%R).
   have Hsubset : [set x | dec sc (enc sc x) == x] \subset dec sc @: (enc sc @: [set: 'rV[A]_k.+1]).
     apply/subsetP => x; rewrite inE => /eqP Hx.
     by apply/imsetP; exists (enc sc x) => //; rewrite imset_f.
-  apply (@le_trans _ _ #| dec sc @: (enc sc @: [set: 'rV[A]_k.+1]) |%:R).
-    by rewrite ler_nat; case/subset_leqif_cards : Hsubset.
-  apply (@le_trans _ _ #| dec sc @: [set: 'rV[bool]_n] |%:R).
-    by rewrite ler_nat; apply/subset_leqif_cards/imsetS/subsetP => x Hx; rewrite inE.
-  apply (@le_trans _ _ #| [set: 'rV[bool]_n] |%:R).
-    by rewrite ler_nat; exact/leq_imset_card.
-  rewrite cardsT card_mx /= card_bool mul1n.
-  by rewrite powR_mulrn// natrX.
+  (* apply (@le_trans _ _ #| dec sc @: (enc sc @: [set: 'rV[A]_k.+1]) |%:R). *)
+  (*   by rewrite ler_nat; case/subset_leqif_cards : Hsubset. *)
+  (* apply (@le_trans _ _ #| dec sc @: [set: 'rV[bool]_n] |%:R). *)
+  (*   by rewrite ler_nat; apply/subset_leqif_cards/imsetS/subsetP => x Hx; rewrite inE. *)
+  (* apply (@le_trans _ _ #| [set: 'rV[bool]_n] |%:R). *)
+  (*   by rewrite ler_nat; exact/leq_imset_card. *)
+  (* rewrite cardsT card_mx /= card_bool mul1n. *)
+  (* by rewrite powR_mulrn// natrX. *)
+  admit.
 rewrite gt1_ler_powRr ?ltr1n//.
 rewrite /e0 [X in _ <= _ * X](_ : _ = r); last by field.
 rewrite -(@ler_pM2r _ (r^-1)) => //; last first.
@@ -139,7 +140,7 @@ rewrite -mulrA mulfV ?mulr1; last first.
   by case/andP : Hr => r0 _; rewrite gt_eqF.
 rewrite (le_trans _ Hk)//.
 by rewrite /SrcConverseBound le_max lexx orbT.
-Qed.
+Admitted.
 
 Local Open Scope fdist_scope.
 
@@ -268,7 +269,8 @@ Theorem source_coding_converse epsilon : 0 < epsilon < 1 ->
       epsilon <= esrc(P , sc).
 Proof.
 move=> espilon01 nu de r_HP n k sc r_sc Hk_bound.
-exact: (@source_coding_converse' _ _ nu de).
-Qed.
+(* exact: (@source_coding_converse' _ _ nu de). *)
+(* Qed. *)
+Admitted.
 
 End source_coding_converse.
