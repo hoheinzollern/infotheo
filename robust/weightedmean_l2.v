@@ -3,7 +3,7 @@ From mathcomp Require Import lra ring.
 From mathcomp Require boolp.
 From mathcomp Require Import Rstruct reals mathcomp_extra.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln.
-Require Import fdist proba.
+Require Import fdist proba vrvproba.
 Require coqRE.
 Require Import Coq.Reals.Reals.
 
