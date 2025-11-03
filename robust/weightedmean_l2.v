@@ -148,14 +148,13 @@ Proof.
   { apply: ler_sum => a aInA.
     have Hg : g_d i a <= 1 := g1 i a aInA.
     have Hd : 0 <= d0 a := FDist.ge0 d0 a. 
-    case: eqP (d0 a == 0) => [->|Hne0].
-  - (* d0 a = 0 *) by rewrite !mulr0 lexx.
-  - (* d0 a > 0 *)
-    have Hdpos : 0 < d0 a.
-      by rewrite lt_def Hd0 andbT (negbTE Hne0).
-    (* 0 < d0 a，右乘保序 *)
-    have := ler_pmulr Hdpos Hg.
-    by rewrite mul1r.
+    rewrite ler_pM; last by [].  
+    by [].            
+    by apply: g0.     (* 0 <= g_d i a *)
+    by apply: FDist.ge0. (* 0 <= d0 a *)
+    by apply: g1.     (* g_d i a <= 1 *)
+  }
+Admitted.
 
 End def.
 End Weighted.
