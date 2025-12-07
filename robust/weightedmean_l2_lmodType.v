@@ -265,10 +265,25 @@ we need
 
 Lemma Certificate_for_Empirical_Mean : 
   exists C, mx_norm (`E Y - mu) <= C * (delta + Num.sqrt (eps * lambda)).
+Proof.
+pose I : {RV P -> R } := Ind S. 
+Check `Pr[I = 0]:R.
+Check Pr P S:R.
+Check Pr P S = eps.
+have: `Pr[I=0] = 1 - eps.
 
-
-
-
+Search `Pr[_=_] Pr.
+rewrite pfwd1E.
+have: finset (preim I (pred1 0)) = ~:S.
+apply /setP.
+move=> x. 
+rewrite !inE.
+rewrite /I.
+rewrite /Ind.
+case: ifPn => //=.
+Search (1 == 0).
+rewrite oner_eq0//. 
+rewrite eqxx//.
 
 (* 
 - Express (\epsilon, \delat) stable distribution
