@@ -78,15 +78,11 @@ Section covariance.
 Local Open Scope ring_scope.
 Context {R : realType}.
 
-Variables (U : finType) (d : nat) (P : R.-fdist U) (X Y: {RV P -> 'rV[R]_d}). 
+Variables (U : finType) (d : nat) (P : R.-fdist U) (X Y: {RV P -> 'rV[R]_d})
+(V : lmodType R). 
 
 Check `E X.
 Check `E X ord0.
-(* Check `E ((X `-cst `E X)^T *m (X `-cst `E X)^T). *)
-
-Locate "`-cst". 
-
-About "`-cst".
 
 Definition mu : 'rV[R]_d := `E X.
 
@@ -94,20 +90,89 @@ Definition transpose_rv {m n :nat}
   (Y : {RV P -> 'M[R]_(m, n)} ) : {RV P -> 'M[R]_(n, m)}
   := fun u => (Y u)^T.
 
-Local Notation "X ^TT" := (transpose_rv X).
+Notation "X ^TT" := (transpose_rv X).
 
-Check (X `-cst mu)^TT.
-Check Y^TT.
 
-Definition matmul_rv {m n o:nat} 
-  (Y : {RV P -> 'M[R]_(m, o)}) (Z : {RV P -> 'M[R]_(o, n)}) 
-  :{RV P -> 'M[R]_(m, n)} := 
-  fun u => (Y u) *m (Z u).
+Lemma E_transpose {m n} (Z : {RV P -> 'M[R]_(m,n)}) :
+  `E (transpose_rv Z) = (`E Z)^T.
+Proof.
+  rewrite /transpose_rv /Ex /=.
+  apply/matrixP=> i j.
+  rewrite !mxE !summxE.
+  apply: eq_bigr => u _; by rewrite !mxE.
+Qed.
 
-Local Notation "Y *M Z" := (matmul_rv Y Z) (at level 40, left associativity).
 
-Check (X `-cst mu)^TT *M (Y `-cst `E Y).
 
+Definition matrix_to_rv {m n} (M : 'M[R]_(m, n)) : {RV P -> 'M[R]_(m, n)} := 
+  const_RV P M. 
+
+Coercion matrix_to_rv : matrix >-> RV_of. 
+
+Definition mat_rv_mul {m n o} 
+  (f : {RV P -> 'M[R]_(m, o)}) (g : {RV P -> 'M[R]_(o, n)}) 
+  : {RV P -> 'M[R]_(m, n)} :=
+  fun u => (f u) *m (g u).
+
+Lemma matrix_to_rvE {m n} (M : 'M[R]_(m,n)) u :
+  matrix_to_rv M u = M.
+Proof. by rewrite /matrix_to_rv /const_RV. Qed. 
+
+Notation "A *M B" := (mat_rv_mul A B) (at level 40, left associativity).
+
+
+
+Lemma E_mat_scalel_RV {m n o:nat} (k : 'M[R]_(m, o)) (Z: {RV P -> 'M[R]_(o, n)}) :
+   `E (k *M Z) = k *m `E Z.
+Proof. 
+rewrite /mat_rv_mul.
+rewrite /Ex.
+rewrite mulmx_sumr.
+apply: eq_bigr => u _.
+by rewrite scalemxAr.
+Qed.
+
+Lemma E_mat_scalel_RV_r {m n o:nat} (k : 'M[R]_(o, n)) (Z: {RV P -> 'M[R]_(m, o)}) :
+   `E (Z *M (matrix_to_rv k)) = `E Z *m k.
+Proof. 
+rewrite /mat_rv_mul.
+rewrite /Ex.
+rewrite mulmx_suml.
+apply: eq_bigr => u _.
+by rewrite scalemxAl.
+Qed.
+
+Lemma E_mat_scale {m n o:nat} (A : 'M[R]_(m, o)) (B: 'M[R]_(o, n)):
+   `E ((matrix_to_rv) A *M (matrix_to_rv B)) = `E A *m `E B.
+Proof.
+rewrite /matrix_to_rv /const_RV.
+rewrite /mat_rv_mul.
+rewrite /Ex /=.
+rewrite -[ \sum_(u in U) P u *: (A *m B)]scaler_suml.
+rewrite -[ \sum_(u in U) P u *: A]scaler_suml.
+rewrite -[ \sum_(u in U) P u *: B]scaler_suml. 
+have hP : \sum_(u in U) P u = 1.
+- case: P => p /= Hp.
+  move/andP: Hp => [_ /eqP hP].
+  exact: hP.
+rewrite hP.
+by rewrite !scale1r. 
+Qed. 
+
+
+Lemma EE_eq_E {m n} (A : {RV P -> 'M[R]_(m, n)}) : 
+  `E (`E A) = `E A. 
+Proof.
+  rewrite /Ex /=.
+  rewrite /Ex /=.
+  rewrite -[ \sum_(u in U) P u *: (\sum_(u0 in U) P u0 *: A u0)]scaler_suml.
+  have hP : \sum_(u in U) P u = 1.
+  - case: P => p /= Hp.
+    move/andP: Hp => [_ /eqP hsum].
+    exact: hsum.
+  rewrite hP.
+  by rewrite scale1r.
+Qed.
 
 (* Cov[X, Y] = E[(X - E[X]) (Y - E[Y])^T] *)
 Definition Cov : 'M[R]_(d, d) :=
@@ -133,11 +198,46 @@ Lemma mat_opp_mix_transpose
   {m n} (A: {RV P -> 'M[R]_(m, n)}) (B : 'M[R]_(m, n)) :
   (A `-cst B)^TT = A^TT `-cst B^T. 
 Proof.
-Admitted.
+rewrite /transpose_rv.
+rewrite /trans_sub_RV.
+apply /boolp.funext=>x/=.
+exact: trmxB.
+Qed.
 
+Lemma mat_rv_sub_mul_mix_bl 
+  {m n p} (A : {RV P -> 'M[R]_(m, n)}) (B : 'M[R]_(m, n)) (C : {RV P -> 'M[R]_(n, p)}) :
+  (A `-cst B) *M C = A *M C - B *M C.
+Proof.
+rewrite /mat_rv_mul /matrix_to_rv /const_RV.
+rewrite /trans_sub_RV.
+rewrite /sub_RV_lmod.
+apply/boolp.funext => u /=.
+apply: mulmxBl.
+Qed.
 
-Check mulmxDr.
+Lemma mat_rv_sub_mul_mix_br 
+  {m n p} (A : {RV P -> 'M[R]_(m, n)}) (B : {RV P -> 'M[R]_(n, p)}) (C : 'M[R]_(n, p)) :
+  A *M (B `-cst C) = A *M B - A *M C.
+Proof.
+rewrite /mat_rv_mul /matrix_to_rv /const_RV.
+rewrite /trans_sub_RV /sub_RV_lmod.
+apply/boolp.funext => u /=.
+apply: mulmxBr.
+Qed.
 
+Lemma expand_transpose_sub_mul_mix {m n: nat}
+  (A C : {RV P-> 'M[R]_(m, n)}) 
+  (B D : 'M[R]_(m, n)):
+  (A^TT `-cst B^T) *M (C `-cst D) = A^TT *M C - B^T *M C - A^TT *M D + B^T *M D.
+Proof.
+rewrite mat_rv_sub_mul_mix_bl mat_rv_sub_mul_mix_br mat_rv_sub_mul_mix_br.
+rewrite -!addrA.        (* Distribute Right again *)
+congr(_ + _).
+rewrite opprB addrCA.
+congr(_ + _).
+rewrite addrC.
+by [].
+Qed.
 
 Lemma Cov_Ex:  
   Cov = (`E (X^TT *M Y))- (`E X)^T *m (`E Y).
