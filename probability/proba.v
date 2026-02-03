@@ -1296,6 +1296,53 @@ Qed.
 
 End Ex_alt.
 
+Section expectation_linearity.
+Context {R : realType} {V : lmodType R}.
+Variables (U : finType) (P : R.-fdist U).
+
+Let Exf (X : {RV P -> V}) : V := `E X.
+
+Let sV : GRing.Scale.law R V := ( *:%R : GRing.Scale.law R V ).
+
+
+Lemma Ex_linear_for :
+  linear_for (fun a (z : V) => a *: z) Exf.
+Proof.
+move=> a X Y.
+rewrite /Exf /Ex.
+rewrite (eq_bigr (fun u => a *: (P u *: X u) + P u *: Y u)) => [|u _].
+- 
+  rewrite big_split.
+  rewrite -scaler_sumr.
+  by [].
+- 
+  rewrite /=.
+  rewrite scalerDr.
+  rewrite !scalerA mulrC -!scalerA.
+  by [].
+Qed. 
+
+HB.instance Definition Ex_isLinear := GRing.isLinear.Build 
+  R 
+  ({RV P -> V}) 
+  (V) 
+  sV 
+  (`E) Ex_linear_for. 
+
+
+Lemma E_as_Exf (X : {RV P -> V}) : `E X = Exf X.
+Proof. by []. Qed.
+
+
+Lemma E_linearD (X Y : {RV P -> V}) :
+`E (X + Y) = `E X + `E Y.
+Proof.
+by rewrite linearD.
+Qed.
+
+
+End expectation_linearity.
+
 Section expected_value_prop.
 Context {R : realType}.
 Variables (U : finType) (P : R.-fdist U).
