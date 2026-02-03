@@ -5,11 +5,14 @@ From HB Require Import structures.
 From mathcomp Require Import all_boot all_order all_algebra.
 From mathcomp Require Import lra.
 From mathcomp Require boolp.
-#[warning="-warn-library-file-internal-analysis"]
-From mathcomp Require Import unstable. (* imported for swap *)
-(* ssrfun and functions are defining incompatible notations [fun ... ]*)
-#[warning="-notation-incompatible-prefix"]
-From mathcomp Require Import mathcomp_extra functions reals exp.
+From mathcomp Require Import unstable mathcomp_extra functions reals exp.
+From mathcomp Require Import finfun.
+From mathcomp.ssreflect Require Import eqtype.
+From mathcomp Require Import ssralg matrix mxalgebra zmodp.
+Import Choice.
+Import Equality.
+Import GRing.Theory.
+Import GRing.Zmodule.Exports.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln fdist.
 
 (**md**************************************************************************)
@@ -725,6 +728,38 @@ Local Notation "X `- Y" := (X - Y) (only parsing) : proba_scope.
 Lemma sub_RV_neg (X Y : {RV P -> V}) :
   X `- Y = X `+ - Y.
 Proof. by []. Qed.
+
+Definition zero_rv : {RV P -> V} := 
+  fun u => 0. 
+
+Check {RV P -> V}.
+
+Lemma add_rvA : associative add_RV.
+Proof. 
+  move=> x y z; apply/boolp.funext=> u. 
+  by rewrite /add_RV addrA. 
+Qed.
+
+Lemma add_rvC : commutative add_RV.
+Proof. 
+  move=> x y; apply/boolp.funext=> u. 
+  by rewrite /add_RV addrC. 
+Qed.
+
+Lemma add_rv0l : left_id zero_rv add_RV.
+Proof. 
+  move=> x; apply/boolp.funext=> u. 
+  by rewrite /add_RV add0r. 
+Qed.
+
+Lemma add_rvNh : left_inverse zero_rv opp_RV add_RV.
+Proof. 
+  move=> x; apply/boolp.funext=> u. 
+  by rewrite /add_RV addNr. 
+Qed.
+
+HB.instance Definition _ := 
+  GRing.isZmodule.Build {RV P -> V} add_rvA add_rvC add_rv0l add_rvNh.
 
 End zmod_random_variables.
 
