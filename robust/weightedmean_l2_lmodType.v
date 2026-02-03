@@ -239,13 +239,31 @@ rewrite addrC.
 by [].
 Qed.
 
+
+(* 
+\mathrm{Cov}[X, Y] = \mathbb{E}[X^T Y] - \mathbb{E}[X] \mathbb{E}[Y]^T
+*)
 Lemma Cov_Ex:  
   Cov = (`E (X^TT *M Y))- (`E X)^T *m (`E Y).
 Proof.
 rewrite /Cov.
 rewrite mat_opp_mix_transpose.
-Qed.
+rewrite expand_transpose_sub_mul_mix. 
+rewrite !(linearD (`E)) !(linearN (`E)). 
+rewrite -E_mat_scalel_RV.
+apply: (addrI (-(`E (X ^TT *M Y) - `E ((`E X)^T *M Y)))).
+rewrite addNr. 
+set Z := (`E (X^TT *M Y) - `E ((`E X)^T *M Y)).  
+rewrite addrA addrA addNr add0r addrC.        (* -A + B  ->  B + -A *)
+rewrite [X in _ - X] E_mat_scalel_RV_r. 
+rewrite [X in X - _] E_mat_scale.
+rewrite EE_eq_E. 
+rewrite -[(`E X)^T](E_transpose X).
+rewrite EE_eq_E.  
+by rewrite subrr.
+Qed. 
 
+End covariance.
 
 Check eigenvalue.
 Print eigenvalue.
