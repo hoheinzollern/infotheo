@@ -1221,6 +1221,52 @@ Definition cast_fun_rV10 U (T : eqType) (Xs : 'rV[U -> T]_1) : 'rV[U]_1 -> T :=
 
 Local Close Scope vec_ext_scope.
 
+Section random_variable_lmod.
+Context {R : realType} {V : lmodType R}.
+Variables (U : finType) (P : R.-fdist U).
+
+Definition rv_scale (a : R) (X : {RV P -> V}) : {RV P -> V} :=
+  fun u => a *: (X u). 
+
+Lemma rv_scaleA a b (X : {RV P -> V}) :
+  rv_scale a (rv_scale b X) = rv_scale (a * b) X.
+Proof.
+apply/boolp.funext => u.
+by rewrite /rv_scale scalerA.
+Qed.
+
+Lemma rv_scale1r : left_id (1 : R) rv_scale.
+Proof.
+move=> X.
+apply/boolp.funext => u.
+by rewrite /rv_scale scale1r.
+Qed.
+
+Lemma rv_scaleDr (a : R) : 
+  forall (X Y : {RV P -> V}), rv_scale a (X + Y) = (rv_scale a X) + (rv_scale a Y).
+Proof.
+move=> X Y.
+apply/boolp.funext => u.
+by rewrite /rv_scale scalerDr.
+Qed.
+
+Lemma rv_scaleDl (X : {RV P -> V}) :
+  {morph (fun a => rv_scale a X) : a b / a + b}.
+Proof.
+move=> a b.
+apply/boolp.funext => u.
+by rewrite /rv_scale scalerDl.
+Qed.
+
+HB.instance Definition _ := GRing.Zmodule_isLmodule.Build R ({RV P -> V})
+  rv_scaleA
+  rv_scale1r
+  rv_scaleDr
+  rv_scaleDl. 
+
+
+End random_variable_lmod.
+
 Section expected_value_def.
 Context {R : realType} {V : lmodType R}.
 Variables (U : finType) (P : R.-fdist U) (X : {RV P -> V}).
