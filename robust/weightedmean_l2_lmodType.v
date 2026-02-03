@@ -43,31 +43,25 @@ Section expectation.
 Variables (U : finType) (P : R.-fdist U). 
 
 Lemma Ex_add_lmod (V : lmodType R) (X Y : {RV P -> V}) :
-  `E (X `+ Y) = `E X + `E Y.
+  `E (X + Y) = `E X + `E Y.
 Proof.
-rewrite /Ex /add_RV.
-rewrite -big_split.
-by apply: eq_bigr => u _; rewrite scalerDr.
+by rewrite linearD.
+Qed.
+
+Lemma Ex_sub_lmod (V : lmodType R) (X Y : {RV P -> V}) :
+  `E (X - Y) = `E X - `E Y.
+Proof.
+by rewrite linearB.
 Qed.
 
 Lemma Ex_opp_lmod (V : lmodType R) (X : {RV P -> V}) :
-  `E (`-- X) = - `E X.
+  `E (-- X) = - `E X.
 Proof.
-rewrite /Ex /opp_RV.
-(* rewrite big_morph_oppr /=. *)
-(* by apply: eq_bigr => u _; rewrite scalerN. *)
 Admitted.
 
 Definition sub_RV_lmod (V : lmodType R) (X Y : {RV P -> V}) : {RV P -> V} :=
   fun u => X u - Y u.
 
-Lemma Ex_sub_lmod (V : lmodType R) (X Y : {RV P -> V}) :
-  `E (sub_RV_lmod X Y) = `E X - `E Y.
-Proof.
-rewrite /sub_RV_lmod.
-(* rewrite (sub_RV_neg X Y). *)
-(* rewrite Ex_add_lmod. *)
-Admitted.
 
 Lemma Ex_const_lmod (V : lmodType R) (m : V) :
   `E (const_RV P (T := V) m) = m.
@@ -78,45 +72,6 @@ rewrite /Ex /const_RV /=.
 Admitted.
 
 End expectation.
-
-Locate addrA. 
-About addrA.
-
-Search (_ + (_ - _) = _ + _ - _).
-
-Section Expand.
-Variable R : ringType.
-Variables (m n p : nat).
-Variables (A B : 'M[R]_(m, n)) (C D : 'M[R]_(m, n)).
-
-Lemma my_addrB (T : zmodType) (x y z : T) :
-  x + (y - z) = x + y - z.
-Proof. 
-  rewrite addrA. 
-  by [].
-Qed.
-
-Locate "*m".
-
-Lemma expand_transpose_sub_mul :
-  (A^T - B^T) *m (C - D)
-  = A^T *m C - B^T *m C - A^T *m D + B^T *m D.
-Proof.
-  rewrite mulmxBl.
-  rewrite mulmxBr.
-rewrite mulmxBr.        (* Distribute Right again *)
-rewrite opprB.   (* Fixes the sign:  ... + (B^T D - B^T C) ... *)
-rewrite addrA.   (* Removes parens:  ... + B^T D - B^T C ...   *)
-rewrite addrAC.  (* Swaps middle:    ... - B^T C + B^T D ...   *)
-rewrite addrAC.  (* Swaps end:       ... - A^T D + B^T D       *)
-by ring.
-set t1 := A^T *m C.
-set t2 := B^T *m C.
-set t3 := A^T *m D.
-set t4 := B^T *m D.
-Admitted.
-End Expand.
-
 
 
 Section covariance. 
