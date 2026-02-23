@@ -359,6 +359,44 @@ Proof.
   apply/matrixP=> i j; by rewrite !mxE.
 Qed.
 
+(* Mask pulls out of quadratic form *)
+Lemma mask_rv_mul (F : {set U}) (A B : {RV P -> 'rV[R]_d}) :
+  (mask_rv F A)^TT *M (mask_rv F B) = mask_rv F (A^TT *M B).
+Proof.
+  rewrite /mask_rv /mask_RV /mat_rv_mul /transpose_rv.
+  apply/boolp.funext => u /=.
+  rewrite /Ind.
+  case: ifPn => _.
+  - by rewrite !scale1r.
+  - by rewrite !scale0r mulmx0.
+Qed.
+
+(* Mask pushes through left-constant multiplication *)
+Lemma mask_rv_const_mul {m1 o1 n1} (F : {set U}) (K : 'M[R]_(m1, o1))
+      (Z : {RV P -> 'M[R]_(o1, n1)}) :
+  mask_rv F (K *M Z) = K *M (mask_rv F Z).
+Proof.
+  rewrite /mask_rv /mask_RV /mat_rv_mul /const_RV.
+  apply/boolp.funext => u /=.
+  rewrite /Ind.
+  case: ifPn => _.
+  - by rewrite !scale1r.
+  - by rewrite !scale0r mulmx0.
+Qed.
+
+(* Mask pushes through right-constant multiplication *)
+Lemma mask_rv_mul_const {m1 o1 n1} (F : {set U}) (Z : {RV P -> 'M[R]_(m1, o1)})
+      (K : 'M[R]_(o1, n1)) :
+  mask_rv F (Z *M K) = (mask_rv F Z) *M K.
+Proof.
+  rewrite /mask_rv /mask_RV /mat_rv_mul /const_RV.
+  apply/boolp.funext => u /=.
+  rewrite /Ind.
+  case: ifPn => _.
+  - by rewrite !scale1r.
+  - by rewrite !scale0r mul0mx.
+Qed.
+
 End conditional_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
