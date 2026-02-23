@@ -334,6 +334,30 @@ Definition mask_RV {V : lmodType R}
 Definition mask_rv {V : lmodType R} (F : {set U}) (X : {RV P -> V}) :=
   mask_RV F X.
 
+(* Mask distributes over RV subtraction *)
+Lemma mask_rv_sub {V : lmodType R} (F : {set U}) (A B : {RV P -> V}) :
+  mask_rv F (A `- B) = mask_rv F A `- mask_rv F B.
+Proof.
+  rewrite /mask_rv /mask_RV /sub_RV /=.
+  apply/boolp.funext => u /=; by rewrite scalerBr.
+Qed.
+
+(* Mask distributes over RV addition *)
+Lemma mask_rv_add {V : lmodType R} (F : {set U}) (A B : {RV P -> V}) :
+  mask_rv F (A + B) = mask_rv F A + mask_rv F B.
+Proof.
+  rewrite /mask_rv /mask_RV /add_RV /=.
+  apply/boolp.funext => u /=; by rewrite scalerDr.
+Qed.
+
+(* Mask commutes with transpose on vectors (seen as 1×d matrices) *)
+Lemma mask_rv_transpose (F : {set U}) (Y : {RV P -> 'rV[R]_d}) :
+  (mask_rv F Y)^TT = mask_rv F (Y^TT).
+Proof.
+  rewrite /mask_rv /mask_RV /transpose_rv.
+  apply/boolp.funext => u /=.
+  apply/matrixP=> i j; by rewrite !mxE.
+Qed.
 
 End conditional_covariance.
 
