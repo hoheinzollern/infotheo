@@ -204,6 +204,16 @@ apply /boolp.funext=>x/=.
 exact: trmxB.
 Qed.
 
+(* (A + B)^T = A^T + B^T for RV-valued matrices *)
+Lemma mat_add_mix_transpose 
+  {m n} (A B : {RV P -> 'M[R]_(m, n)}) :
+  (A + B)^TT = A^TT + B^TT.
+Proof.
+  rewrite /transpose_rv /trans_add_RV.
+  apply /boolp.funext=>u /=.
+  apply/matrixP=> i j; by rewrite !mxE.
+Qed.
+
 Lemma mat_rv_sub_mul_mix_bl 
   {m n p} (A : {RV P -> 'M[R]_(m, n)}) (B : 'M[R]_(m, n)) (C : {RV P -> 'M[R]_(n, p)}) :
   (A `-cst B) *M C = A *M C - B *M C.
@@ -224,6 +234,40 @@ rewrite /trans_sub_RV /sub_RV_lmod.
 apply/boolp.funext => u /=.
 apply: mulmxBr.
 Qed.
+
+(* (A + B) * C = A*C + B*C for RV-valued matrices *)
+Lemma mat_rv_add_mul_mix_bl 
+  {m n p} (A B : {RV P -> 'M[R]_(m, n)}) (C : {RV P -> 'M[R]_(n, p)}) :
+  (A + B) *M C = A *M C + B *M C.
+Proof.
+  rewrite /mat_rv_mul.
+  apply/boolp.funext => u /=.
+  exact: mulmxDl.
+Qed.
+
+Lemma mat_rv_add_mul_mix_br 
+  {m n p} (A : {RV P -> 'M[R]_(m, n)}) (B C : {RV P -> 'M[R]_(n, p)}) :
+  A *M (B + C) = A *M B + A *M C.
+Proof.
+  rewrite /mat_rv_mul.
+  apply/boolp.funext => u /=.
+  exact: mulmxDr.
+Qed.
+
+(* Expand (A+B)^T (C+D) *)
+Lemma expand_transpose_add_mul_mix {m n: nat}
+  (A C : {RV P-> 'M[R]_(m, n)}) 
+  (B D : 'M[R]_(m, n)):
+  (A^TT `+cst B^T) *M (C `+cst D) =
+      A^TT *M C + B^T *M C + A^TT *M D + B^T *M D.
+Proof.
+  rewrite mat_rv_add_mul_mix_bl mat_rv_add_mul_mix_br mat_rv_add_mul_mix_br.
+  rewrite -!addrA.
+  congr (_ + _).
+  rewrite addrCA; congr (_ + _); rewrite addrC; by [].
+Qed.
+
+
 
 Lemma expand_transpose_sub_mul_mix {m n: nat}
   (A C : {RV P-> 'M[R]_(m, n)}) 
