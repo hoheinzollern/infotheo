@@ -1059,6 +1059,26 @@ rewrite hmul (dotmulP v Delta) (dotmulP Delta v).
 rewrite -scalar_mxM !mxE.
 by rewrite dotmulC expr2.
 Qed.
+
+(* RHS expansion of 2. used before applying the Rayleigh bound. 
+v^T \Sigma_Y v 
+= 
+(1 - ep) v^T \Sigma_{X'} v + eps v^T  \Sigma_{E} v + eps(1 - eps) v^T 
+(\mu_{X'} - \mu_E)(\mu_{X'} - \mu_E)^T v 
+*)
+Lemma Cov_total_eq1_qf (v : 'rV[R]_d) :
+  Bad = ~: Good ->
+  (v *m Cov_all *m v^T) 0 0 =
+    (1 - eps) * (v *m Sigma1 *m v^T) 0 0
+    + eps * (v *m Sigma0 *m v^T) 0 0
+    + (eps * (1 - eps)) * (v *d (mu1 - mu0))^+2.
+Proof.
+move=> BadC.
+rewrite (Cov_total_eq1 BadC).
+rewrite qf_add.
+rewrite (qf_add v ((1 - eps) *: Sigma1) (eps *: Sigma0)).
+rewrite !qf_scale qf_rank1.
+by [].
 Qed.
 
 
