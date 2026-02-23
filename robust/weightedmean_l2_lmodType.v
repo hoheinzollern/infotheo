@@ -1084,10 +1084,18 @@ Qed.
 
 End test_total_covariance.
 
+
+Section rayleigh.
+Context {R : realType} {U : finType} (P : R.-fdist U) (d : nat).
+Variable Y : {RV P -> 'rV[R]_d}.
+Local Open Scope ring_scope.
+
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
 
-End covariance.
+
+
+End rayleigh.
 
 
 Section total_variation_distance. 
