@@ -513,6 +513,17 @@ Proof.
     by case: ifPn => _ /=; rewrite ?mulr1 ?mulr0.
   by rewrite /Pr.
 Qed.
+
+(* Conditional Covariance Cov[Y | F] *)
+(*
+Cov[Y | F] = E[(1_F (Y - \mu_F)) (1_F (Y - \mu_F))^T] / P(F)
+*)
+Definition cCov (F : {set U}) (Y : {RV P -> 'rV[R]_d}) : 'M[R]_(d,d) :=
+  let muF := cEx_Ind_vec F Y in
+  (Pr P F)^-1 *:
+    `E ((mask_rv F (Y `-cst muF))^TT *M (mask_rv F (Y `-cst muF))).
+
+
 End conditional_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
