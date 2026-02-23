@@ -314,6 +314,29 @@ Notation "X ^TT" := (transpose_rv X).
 Notation "A *M B" := (mat_rv_mul A B) (at level 40, left associativity).
 
 
+Section conditional_covariance.
+Context {R : realType}. 
+Variables (m n d : nat).
+Variables (U : finType) (P : R.-fdist U). 
+
+Variables  (Good : {set U}) (Bad : {set U}).  (* 事件划分 *)
+
+(*
+Write indicator RV consistent with the type of RV: {RV P -> V}
+For event u \in F \subset U, 
+mask_RV = I_F * X = I_F(u) * X(u), denoting event F occuring "and" X. 
+*)
+Definition mask_RV {V : lmodType R} 
+  (F : {set U}) (X : {RV P -> V}) : {RV P -> V} :=
+  fun u => (Ind F u) *: X u.
+
+(* Generic alias of [mask_RV]; kept for local proofs below *)
+Definition mask_rv {V : lmodType R} (F : {set U}) (X : {RV P -> V}) :=
+  mask_RV F X.
+
+
+End conditional_covariance.
+
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
 
