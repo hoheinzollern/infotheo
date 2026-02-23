@@ -397,6 +397,36 @@ Proof.
   - by rewrite !scale0r mul0mx.
 Qed.
 
+(* 
+idempotent for indicators RV:
+1_F * 1_F = 1_F
+*)
+Lemma mask_rv_idem (F : {set U}) (W : {RV P -> 'rV[R]_d}) :
+  mask_rv F (mask_rv F W) = mask_rv F W.
+Proof.
+  rewrite /mask_rv /mask_RV.
+  apply/boolp.funext=>u/=.
+  case Fu: (u \in F).
+  - by rewrite /Ind Fu /= !scale1r.
+  - by rewrite /Ind Fu /= !scale0r.
+Qed.
+
+(*
+F \cap G = \emptyset -> 1_F(u) * 1_G(u) * X(u) = 0
+*)
+Lemma mask_rv_disjoint (F G : {set U}) (W : {RV P -> 'rV[R]_d}) :
+  F :&: G = set0 -> mask_rv F (mask_rv G W) = const_RV P 0.
+Proof.
+  move=> FG0; rewrite /mask_rv /mask_RV /const_RV.
+  move/setP: FG0 => FG0.
+  apply/boolp.funext=>u/=.
+  rewrite !/Ind.
+  case Fu: (u \in F); case Gu: (u \in G); rewrite /= ?scale0r ?scale1r //.
+  move: (FG0 u); rewrite !inE Fu Gu /=.
+  by [].
+Qed.
+
+
 End conditional_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
