@@ -727,6 +727,93 @@ Proof.
   by rewrite scalemxAl.
 Qed.
 
+(*
+Cov(Y) = E[Cov(Y | Z)] + Cov(E[Y | Z])
+*)
+Lemma law_total_covariance :
+  Cov_total_Z = ECov_given_Z + Cov muZ_rv muZ_rv.
+Proof.
+  (* Cov in ``E[X^T Y] - EX^T EY`` form *)
+  have CovY   := @Cov_Ex R U d P Y Y.
+  have CovMuZ := @Cov_Ex R U d P muZ_rv muZ_rv.
+  rewrite /Cov_total_Z CovY.
+  rewrite /ECov_given_Z /Cov_given_Z /cCov.
+  (* Move probability factor inside each summand *)
+  have -> : \sum_(a in A) (Pr P (Fz a)) *:
+        ((Pr P (Fz a))^-1 *:
+          `E ((mask_rv (Fz a) (Y `-cst mu_given_Z a))^TT
+               *M (mask_rv (Fz a) (Y `-cst mu_given_Z a)))) =
+          \sum_(a in A) `E (mask_rv (Fz a)
+               ((Y `-cst mu_given_Z a)^TT *M (Y `-cst mu_given_Z a))).
+    apply: eq_bigr => a _.
+    rewrite mask_rv_mul.
+    rewrite -(@Emask_cEx_mx R U P _ _ (Fz a)
+        ((Y `-cst mu_given_Z a)^TT *M (Y `-cst mu_given_Z a))).
+    by rewrite /cEx_Ind_lmod.
+  (* Expand the square *)
+  rewrite (eq_bigr (fun a =>
+     `E (mask_rv (Fz a)
+        (Y^TT *M Y
+          - (mu_given_Z a)^T *M Y
+          - Y^TT *M (mu_given_Z a)
+          + (mu_given_Z a)^T *M (mu_given_Z a))))) ; last first.
+    move=> a _.
+    rewrite mat_opp_mix_transpose.
+    by rewrite -expand_transpose_sub_mul_mix.
+  have hsplit_sum :
+      \sum_(a in A)
+        (@Ex R _ U P (mask_rv (Fz a)
+             (Y^TT *M Y
+               - (mu_given_Z a)^T *M Y
+               - Y^TT *M (mu_given_Z a)
+               + (mu_given_Z a)^T *M (mu_given_Z a)))) =
+      \sum_(a in A)
+        ((@Ex R _ U P (mask_rv (Fz a) (Y^TT *M Y)))
+          - (@Ex R _ U P (mask_rv (Fz a) ((mu_given_Z a)^T *M Y)))
+          - (@Ex R _ U P (mask_rv (Fz a) (Y^TT *M (mu_given_Z a))))
+          + (@Ex R _ U P (mask_rv (Fz a) ((mu_given_Z a)^T *M (mu_given_Z a))))).
+    apply: eq_bigr => a _.
+    rewrite mask_rv_add !mask_rv_sub.
+    rewrite (linearD (@Ex R _ U P)).
+    rewrite (linearB (@Ex R _ U P)).
+    by rewrite (linearB (@Ex R _ U P)).
+  rewrite hsplit_sum.
+  rewrite big_split /= !sumrB /=.
+  set S1 := \sum_(a in A) `E (mask_rv (Fz a) (Y^TT *M Y)).
+  set S2 := \sum_(a in A) `E (mask_rv (Fz a) ((mu_given_Z a)^T *M Y)).
+  set S3 := \sum_(a in A) `E (mask_rv (Fz a) (Y^TT *M (mu_given_Z a))).
+  set S4 := \sum_(a in A) `E (mask_rv (Fz a) ((mu_given_Z a)^T *M (mu_given_Z a))).
+  (* S1 collapses by partition on Z *)
+  have -> : S1 = `E (Y^TT *M Y) by rewrite /S1 E_partition_preim.
+  (* Closed forms for S2,S3,S4 *)
+  have -> : S2 = \sum_(a in A) (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+    apply: eq_bigr => a _; exact: E_mask_mu_left.
+  have -> : S3 = \sum_(a in A) (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+    apply: eq_bigr => a _; exact: E_mask_mu_right.
+  have -> : S4 = \sum_(a in A) (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+    apply: eq_bigr => a _.
+    have -> : mask_rv (Fz a) ((mu_given_Z a)^T *M (mu_given_Z a)) =
+              mask_RV (Fz a) (const_RV P ((mu_given_Z a)^T *m (mu_given_Z a))).
+      apply/boolp.funext=>u /=; by rewrite /mask_RV /const_RV.
+    exact: E_mask_const.
+  set T := \sum_(a in A) (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+  (* ECov_given_Z simplifies to E[Y^T Y] - T *)
+  (* Cov muZ part *)
+  rewrite CovMuZ /Cov.
+  rewrite E_muZ_quad E_muZ_rv.
+  (* Final algebra *)
+  set M := ((`E Y)^T *m `E Y).
+  apply: (addrI (- `E (Y ^TT *M Y))).
+  rewrite !addrA addNr !add0r.
+  rewrite -!addrA.
+  rewrite [(- T + (T + (T - M)))]addrA.
+  rewrite addNr add0r.
+  rewrite [T - M]addrC.
+  rewrite addrA [(- T + - M)]addrC.
+  by rewrite -addrA addNr addr0.
+Qed.
+
+
 End total_covariance. 
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
