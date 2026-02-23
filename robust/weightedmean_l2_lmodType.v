@@ -30,6 +30,7 @@ Import Order.POrderTheory Order.Theory Num.Theory GRing.Theory.
 Require Import Interval.Tactic.
 Require Import Program.Wf.
 Require Import robustmean.
+From mathcomp.algebra_tactics Require Import ring.
 
 Section test.
 Variables (R : realType) (U : finType) (P : R.-fdist U).
