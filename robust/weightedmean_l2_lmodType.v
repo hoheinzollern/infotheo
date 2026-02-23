@@ -603,6 +603,54 @@ Definition ECov_given_Z : 'M[R]_(d,d) :=
   
 Definition Cov_total_Z : 'M[R]_(d,d) :=  Cov Y Y.
 
+(* Expectation of the piecewise-constant conditional mean RV 
+E[\mu_Z] = E[E[Y | Z]] = E[Y ]
+aka law of total expectation
+*)
+Lemma E_muZ_rv : `E muZ_rv = `E Y.
+Proof.
+  rewrite /muZ_rv /mu_given_Z /Ex.
+  have hZT : Z @^-1: [set: A] = [set: U].
+    apply/setP => u; by rewrite !inE.
+  have hpart := partition_big_preimset _ Z [set: A]
+      (fun u => P u *: cEx_Ind_vec (Fz (Z u)) Y).
+  rewrite hZT in hpart.
+  have hsetT : \sum_(u in [set: U]) P u *: cEx_Ind_vec (Fz (Z u)) Y =
+               \sum_(u in U) P u *: cEx_Ind_vec (Fz (Z u)) Y.
+    rewrite [LHS]big_mkcond /=.
+    by apply: eq_bigr => u _; rewrite inE.
+  rewrite -hsetT.
+  rewrite hpart /=.
+  have hsetTA :
+      \sum_(a in [set: A]) \sum_(u in U | Z u == a)
+        P u *: cEx_Ind_vec (Fz (Z u)) Y =
+      \sum_(a in A) \sum_(u in U | Z u == a)
+        P u *: cEx_Ind_vec (Fz (Z u)) Y.
+    rewrite [LHS]big_mkcond /=.
+    by apply: eq_bigr => a _; rewrite inE.
+  rewrite hsetTA.
+  rewrite (eq_bigr (fun a => (Pr P (Fz a)) *: cEx_Ind_vec (Fz a) Y)); last first.
+    move=> a _; rewrite /Pr.
+    have hFzE u a0 : (u \in Fz a0) = (Z u == a0).
+      by rewrite inE.
+    have hPrF : \sum_(u in Fz a) P u = \sum_(u in U | Z u == a) P u.
+      rewrite [LHS]big_mkcond [RHS]big_mkcond /=.
+      by apply: eq_bigr => u _; rewrite (hFzE u a).
+    have -> :
+        \sum_(u in U | Z u == a) P u *: cEx_Ind_vec (Fz (Z u)) Y =
+        \sum_(u in U | Z u == a) P u *: cEx_Ind_vec (Fz a) Y.
+      rewrite [LHS]big_mkcond [RHS]big_mkcond /=.
+      apply: eq_bigr => u _.
+      case Hu: (Z u == a); first by move/eqP: Hu => ->.
+      by [].
+    by rewrite hPrF scaler_suml.
+  have EY_by_parts :
+      \sum_(u in U) P u *: Y u = \sum_(a in A) `E (mask_rv (Fz a) Y).
+    exact: E_partition_preim.
+  rewrite EY_by_parts; apply: eq_bigr => a _.
+  by rewrite Emask_cEx_vec.
+Qed.
+
 End total_covariance. 
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
