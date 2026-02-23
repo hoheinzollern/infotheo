@@ -1149,6 +1149,58 @@ apply: eq_bigr => i _.
 by rewrite !mxE expr2.
 Qed.
 
+
+(*
+Property of Rayleigh Quotient
+v != 0 -> v^T A c / v^T v <= \lambda_max 
+*)
+Lemma rayleigh_le_max (v : 'rV[R]_d) :
+  v != 0 -> RQ v <= lambda_max.
+Proof.
+move=> v0.
+case: A_orth_diag => Q [sp [Qorth AQdiag sp_le]].
+pose w : 'rV[R]_d := v *m Q.
+have QQT1 : Q *m Q^T = 1%:M.
+  by move: Qorth; rewrite qualifE /orthogonal_pred => /eqP.
+
+have num_eq_mx : v *m A *m v^T = w *m (diag_mx sp) *m w^T.
+  rewrite /w AQdiag trmx_mul.
+  by rewrite !mulmxA.
+have den_eq_mx' : w *m w^T = v *m v^T.
+  rewrite /w trmx_mul -mulmxA.
+  rewrite [Q *m (Q^T *m v^T)]mulmxA QQT1 mul1mx.
+  by [].
+have den_eq_mx : v *m v^T = w *m w^T by rewrite den_eq_mx'.
+
+have num_eq : (v *m A *m v^T) 0 0 = (w *m (diag_mx sp) *m w^T) 0 0.
+  by rewrite num_eq_mx.
+have den_eq : (v *m v^T) 0 0 = (w *m w^T) 0 0.
+  by rewrite den_eq_mx.
+
+have denv_ge0 : 0 <= (v *m v^T) 0 0.
+  rewrite (dotmulP v v) mxE.
+  exact: le0dotmul.
+have denv_neq0 : (v *m v^T) 0 0 != 0.
+  rewrite (dotmulP v v) mxE.
+  by rewrite dotmulvv0.
+have denv_gt0 : 0 < (v *m v^T) 0 0.
+  by rewrite lt0r denv_neq0 denv_ge0.
+have denw_gt0 : 0 < (w *m w^T) 0 0 by rewrite -den_eq.
+
+  have num_le :
+    (w *m (diag_mx sp) *m w^T) 0 0 <= lambda_max * (w *m w^T) 0 0.
+  rewrite qf_diag qf_self mulr_sumr.
+  apply: ler_sum => i _.
+  have wi2_ge0 : 0 <= (w 0 i)^+2 by exact: sqr_ge0.
+  exact: (ler_wpM2r wi2_ge0 (sp_le i)).
+
+rewrite /RQ /= num_eq den_eq.
+rewrite ler_pdivrMr; last exact: denw_gt0.
+exact: num_le.
+Qed.
+
+
+
 End rayleigh.
 
 
