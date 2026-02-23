@@ -526,6 +526,23 @@ Definition cCov (F : {set U}) (Y : {RV P -> 'rV[R]_d}) : 'M[R]_(d,d) :=
 
 End conditional_covariance.
 
+
+Section total_covariance. 
+Context {R : realType}.
+Variable d : nat.
+Variables (U : finType) (P : R.-fdist U) (A : finType).
+Variable B Y : {RV P -> 'rV[R]_d}.
+Variable Z : {RV P -> A}.           
+Variable D : 'rV[R]_d. 
+
+(*
+F_z(a) = Z^{-1}({a}) = { u \in U | Z(u) = a} 
+Get the event u that makes random variable Z(u) has value a
+*)
+Local Notation Fz a := (finset (Z @^-1 a)).
+
+End total_covariance. 
+
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
 
