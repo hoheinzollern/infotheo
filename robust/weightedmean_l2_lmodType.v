@@ -576,6 +576,33 @@ Proof.
   - by rewrite /= scale0r scaler0.
 Qed.
 
+(* 
+rewrite {Z = a} as an indicator random variable.
+\mu_{Y | Z = a} = E [Y | Z = a] 
+*)
+Definition mu_given_Z a : 'rV[R]_d := cEx_Ind_vec (Fz a) Y.
+
+(*
+Regard conditional expectation as a random variable with type {RV P -> 'rV[R]_d}
+*)
+Definition muZ_rv : {RV P -> 'rV[R]_d} :=
+  fun u => mu_given_Z (Z u).
+
+(*
+Conditional Covariance with Z = a as a normal matrix 
+\Sigma_{Y | Z = a} = Cov 
+*)
+Definition Cov_given_Z a : 'M[R]_(d,d) :=  cCov (Fz a) Y.
+
+(*
+First Term in Law of Total Covariance: 
+E[Cov (Y | Z )]
+*)
+Definition ECov_given_Z : 'M[R]_(d,d) :=
+  \sum_(a in A) (Pr P (Fz a)) *: Cov_given_Z a.
+  
+Definition Cov_total_Z : 'M[R]_(d,d) :=  Cov Y Y.
+
 End total_covariance. 
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
