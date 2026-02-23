@@ -541,6 +541,41 @@ Get the event u that makes random variable Z(u) has value a
 *)
 Local Notation Fz a := (finset (Z @^-1 a)).
 
+(* 
+Partition expectation by the preimage of Z 
+E[W] = \sum_{a \in A} E[1_{Z = a} W] 
+*)
+Lemma E_partition_preim {m n} (W : {RV P -> 'M[R]_(m,n)}) :
+  `E W = \sum_(a in A) `E (mask_rv (Fz a) W).
+Proof.
+  rewrite /Ex.
+  have hZT : Z @^-1: [set: A] = [set: U].
+    apply/setP => u; by rewrite !inE.
+  have hpart := partition_big_preimset _ Z [set: A] (fun u => P u *: W u).
+  rewrite hZT in hpart.
+  have hsetT : \sum_(u in [set: U]) P u *: W u = \sum_(u in U) P u *: W u.
+    rewrite [LHS]big_mkcond /=.
+    by apply: eq_bigr => u _; rewrite inE.
+  rewrite -hsetT.
+  rewrite hpart /=.
+  have hsetTA :
+      \sum_(a in [set: A]) \sum_(u in U | Z u == a) P u *: W u =
+      \sum_(a in A) \sum_(u in U | Z u == a) P u *: W u.
+    rewrite [LHS]big_mkcond /=.
+    by apply: eq_bigr => a _; rewrite inE.
+  rewrite hsetTA.
+  have hFzE u a0 : (u \in Fz a0) = (Z u == a0).
+    by rewrite inE.
+  apply: eq_bigr => a _.
+  rewrite /mask_rv /mask_RV.
+  rewrite [LHS]big_mkcond /=.
+  apply: eq_bigr => u _.
+  rewrite /Ind (hFzE u a).
+  case Hz: (Z u == a).
+  - by rewrite /= scale1r.
+  - by rewrite /= scale0r scaler0.
+Qed.
+
 End total_covariance. 
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
