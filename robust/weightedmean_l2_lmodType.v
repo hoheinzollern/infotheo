@@ -1003,6 +1003,22 @@ rewrite !big_ord1 !mxE.
 rewrite ?big_ord1 ?mxE.
 ring.
 Qed.
+
+(*
+Eq 1. in our proof.
+\Sigma_Y = (1-eps)\Sigma_{X'} + \eps\Sigma_E + 
+\eps(1-\eps)(\mu_{X'} - \mu_E)(\mu_{X'} - \mu_E)^T
+*)
+Lemma Cov_total_eq1 :
+  Bad = ~: Good ->
+  Cov_all =
+    (1 - eps) *: Sigma1 + eps *: Sigma0
+    + (eps * (1 - eps)) *: ((mu1 - mu0)^T *m (mu1 - mu0)).
+Proof.
+move=> BadC.
+rewrite (Cov_total BadC) /ECov_cond.
+by rewrite (Cov_muI_rank1 BadC).
+Qed.
 Qed.
 
 
