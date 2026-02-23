@@ -436,6 +436,65 @@ Definition cEx_Ind_lmod {V : lmodType R} (F : {set U}) (X : {RV P -> V}) :
 Definition cEx_Ind_vec (F : {set U}) (Y : {RV P -> 'rV[R]_d}) : 'rV[R]_d :=
   cEx_Ind_lmod F Y.
 
+(*
+E[1_F Y] = P(F) E[Y | F]
+*)
+Lemma Emask_cEx_vec (F : {set U}) (Y : {RV P -> 'rV[R]_d}) :
+  `E (mask_rv F Y) = (Pr P F) *: cEx_Ind_vec F Y.
+Proof.
+  rewrite /cEx_Ind_vec /cEx_Ind_lmod.
+  case PF0 : (Pr P F == 0).
+  - move: PF0.
+    move/eqP.
+    move=> PF0.
+    rewrite PF0 invr0 !scale0r.
+    rewrite /Ex /mask_rv /mask_RV.
+    apply/rowP => i; rewrite summxE mxE.
+    have hP0 : forall u, u \in F -> P u = 0.
+      move=> u HuF.
+      move/eqP : PF0; rewrite /Pr psumr_eq0 ?FDist.ge0 // => /allP hPF.
+      have := hPF u (mem_index_enum u).
+      by rewrite HuF implyTb => /eqP.
+    rewrite big1 ?mxE // => u _.
+    rewrite !mxE.
+    case HuF: (u \in F).
+    - rewrite /Ind HuF /=.
+      have Pu0 := hP0 u HuF.
+      by rewrite Pu0 ?mul0r ?mulr0.
+    - by rewrite /Ind HuF /= ?mul0r ?mulr0.
+  - have PF0' : Pr P F != 0.
+      apply/negP => /eqP PF0'.
+      move: PF0; by rewrite PF0' eq_refl.
+    by rewrite scalerKV ?PF0'.
+Qed.
+
+Lemma Emask_cEx_mx {m0 n0} (F : {set U}) (W : {RV P -> 'M[R]_(m0,n0)}) :
+  `E (mask_rv F W) = (Pr P F) *: cEx_Ind_lmod F W.
+Proof.
+  rewrite /cEx_Ind_lmod.
+  case PF0 : (Pr P F == 0).
+  - move/eqP: PF0 => PF0.
+    rewrite PF0 invr0 !scale0r.
+    rewrite /Ex /mask_rv /mask_RV.
+    apply/matrixP => i j; rewrite !mxE.
+    have hP0 : forall u, u \in F -> P u = 0.
+      move=> u HuF.
+      move/eqP : PF0; rewrite /Pr psumr_eq0 ?FDist.ge0 // => /allP hPF.
+      have := hPF u (mem_index_enum u).
+      by rewrite HuF implyTb => /eqP.
+    rewrite big1; last first.
+      move=> u _.
+      case HuF: (u \in F).
+      + rewrite /Ind HuF /=.
+        have Pu0 := hP0 u HuF.
+        by rewrite Pu0 scale0r.
+      + by rewrite /Ind HuF /= scale0r scaler0.
+    by rewrite mxE.
+  - have PF0' : Pr P F != 0.
+      apply/negP => /eqP PF0'.
+      move: PF0; by rewrite PF0' eq_refl.
+    by rewrite scalerKV ?PF0'.
+Qed.
 End conditional_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
