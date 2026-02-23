@@ -426,6 +426,15 @@ Proof.
   by [].
 Qed.
 
+(* refer to cEx_ExInd in robust_mean.v: 
+E(mask_RV F X) = \sum_{u\in U} P(u),1_{u \ in U} *: X(u)).
+(Pr P F) <=> P(F) 
+*)
+Definition cEx_Ind_lmod {V : lmodType R} (F : {set U}) (X : {RV P -> V}) : 
+  V :=(Pr P F)^-1 *: `E (mask_RV F X). 
+
+Definition cEx_Ind_vec (F : {set U}) (Y : {RV P -> 'rV[R]_d}) : 'rV[R]_d :=
+  cEx_Ind_lmod F Y.
 
 End conditional_covariance.
 
