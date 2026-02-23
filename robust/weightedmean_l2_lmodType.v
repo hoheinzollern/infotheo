@@ -1019,6 +1019,46 @@ move=> BadC.
 rewrite (Cov_total BadC) /ECov_cond.
 by rewrite (Cov_muI_rank1 BadC).
 Qed.
+
+
+(* Scalar quadratic form helpers for deriving the Rayleigh-step expansion 
+v^T (M + N)v =  v^T M v +  v^T N v
+*)
+Lemma qf_add (v : 'rV[R]_d) (M N : 'M[R]_(d, d)) :
+  (v *m (M + N) *m v^T) 0 0 =
+  (v *m M *m v^T) 0 0 + (v *m N *m v^T) 0 0.
+Proof.
+by rewrite mulmxDr mulmxDl !mxE.
+Qed.
+
+(*
+v^T (a M)v  = a v^T M v
+*)
+Lemma qf_scale (a : R) (v : 'rV[R]_d) (M : 'M[R]_(d, d)) :
+  (v *m (a *: M) *m v^T) 0 0 = a * (v *m M *m v^T) 0 0.
+Proof.
+rewrite -scalemxAr.
+rewrite !mxE mulr_sumr.
+apply: eq_bigr => j _.
+by rewrite mxE mulrA.
+Qed.
+
+(*
+v^T (@D @D^T) v = (v^T @D)^2
+where
+@D = \mu_X' - \mu_E
+*)
+Lemma qf_rank1 (v : 'rV[R]_d) :
+  (v *m (((mu1 - mu0)^T) *m (mu1 - mu0)) *m v^T) 0 0 =
+  (v *d (mu1 - mu0))^+2.
+Proof.
+set Delta := (mu1 - mu0).
+have hmul : v *m (Delta^T *m Delta) *m v^T = (v *m Delta^T) *m (Delta *m v^T).
+  by rewrite !mulmxA.
+rewrite hmul (dotmulP v Delta) (dotmulP Delta v).
+rewrite -scalar_mxM !mxE.
+by rewrite dotmulC expr2.
+Qed.
 Qed.
 
 
