@@ -310,9 +310,9 @@ Qed.
 
 End covariance.
 
-Check eigenvalue.
-Print eigenvalue.
-Print eigenspace. 
+Notation "X ^TT" := (transpose_rv X).
+Notation "A *M B" := (mat_rv_mul A B) (at level 40, left associativity).
+
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
