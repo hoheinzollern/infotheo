@@ -1093,6 +1093,39 @@ Local Open Scope ring_scope.
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
 
+(* Covariance *)
+Let A := Cov Y Y.
+
+(* Rayleigh Q 
+RQ(v) = v^T A v / v^T v
+*)
+Definition RQ (v : 'rV[R]_d) : R :=
+  let num := (v *m A *m v^T) 0 0 in
+  let den := (v *m v^T) 0 0 in num / den.
+
+Variable lambda_max : R. (* maximum eigen values *)
+
+(* To be proved *)
+Hypothesis A_symmetric : A^T = A. 
+
+(* To be proved *)
+(* lambda_max is the supremum of eigenvalues of A *)
+Hypothesis lambda_max_spec : forall a, eigenvalue A a -> a <= lambda_max.
+
+
+(* To be proved.
+Spectral decomposition bridge, to be instantiated using a spectral theorem.
+This keeps the Rayleigh proof itself concrete (using robot/euclidean lemmas). 
+   
+sp = (\lamba_1, ... \lambda_d) eigenvalues vector
+Decompose A = Q^T diag(sp) Q
+
+*)
+Hypothesis A_orth_diag :
+  exists (Q : 'M[R]_d) (sp : 'rV[R]_d),
+    [/\ Q \is 'O[R]_d,
+        A = Q *m (diag_mx sp) *m Q^T &
+        forall i, sp 0 i <= lambda_max].
 
 
 End rayleigh.
