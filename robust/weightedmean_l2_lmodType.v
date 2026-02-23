@@ -885,6 +885,124 @@ have htc := @law_total_covariance R d U P bool Y Igb.
 rewrite /Cov_all /Cov_muI hECov hmu in htc.
 exact: htc.
 Qed.
+
+(*
+Cov(\mu_{Y | I}) = eps (1 - eps) (\mu_X' - \mu_E) (\mu_X' - \mu_E)^T 
+2nd term in eq.1 in our proof.
+*)
+Lemma Cov_muI_rank1 :
+  Bad = ~: Good ->
+  Cov_muI = (eps * (1 - eps)) *: ((mu1 - mu0)^T *m (mu1 - mu0)).
+Proof.
+move=> BadC.
+have hEx_add (V : lmodType R) (A B : {RV P -> V}) :
+    `E (A + B) = `E A + `E B.
+  exact: linearD.
+pose Igb : {RV P -> bool} := fun u => u \in Good.
+have hFg : finset (Igb @^-1 true) = Good.
+  apply/setP => u; rewrite !inE /Igb /=.
+  by case Hu: (u \in Good).
+have hFb : finset (Igb @^-1 false) = Bad.
+  apply/setP => u; rewrite !inE /Igb /= BadC !inE.
+  by [].
+have hEGood_mu :
+    `E (mask_rv Good muI_rv) = (Pr P Good) *: mu1.
+  have -> : mask_rv Good muI_rv = mask_rv Good (const_RV P mu1).
+    apply/boolp.funext => u /=.
+    rewrite /mask_rv /mask_RV /muI_rv.
+    case Hu: (u \in Good).
+    - by rewrite /Ind Hu /=.
+    - by rewrite /Ind Hu /= !scale0r.
+  exact: E_mask_const.
+have hEBad_mu :
+    `E (mask_rv Bad muI_rv) = (Pr P Bad) *: mu0.
+  have -> : mask_rv Bad muI_rv = mask_rv Bad (const_RV P mu0).
+    apply/boolp.funext => u /=.
+    rewrite /mask_rv /mask_RV /muI_rv.
+    case Bu: (u \in Bad).
+    - have HuG : (u \in Good) = false.
+        move: Bu; rewrite BadC !inE => /negbTE ->.
+        by [].
+      by rewrite /Ind Bu /= HuG.
+    - by rewrite /Ind Bu /= !scale0r.
+  exact: E_mask_const.
+have hEmuI :
+    `E muI_rv = (Pr P Good) *: mu1 + (Pr P Bad) *: mu0.
+  have hsplit :
+      muI_rv = mask_rv Good muI_rv + mask_rv Bad muI_rv.
+    apply/boolp.funext => u /=.
+    apply/matrixP => i j.
+    rewrite !mxE /mask_rv /mask_RV /muI_rv !/Ind /=.
+    case Hu: (u \in Good); case Hb: (u \in Bad) => /=.
+    - by move: Hb; rewrite BadC inE Hu.
+    - by rewrite ?mul1r ?mulr1 ?mul0r ?mulr0 ?add0r ?addr0.
+    - by rewrite ?mul1r ?mulr1 ?mul0r ?mulr0 ?add0r ?addr0.
+    - by move: Hb; rewrite BadC inE Hu.
+  have hExsplit :
+      `E muI_rv = `E (mask_rv Good muI_rv + mask_rv Bad muI_rv) :=
+    congr1 (fun Z => `E Z) hsplit.
+  rewrite hExsplit (hEx_add _ (mask_rv Good muI_rv) (mask_rv Bad muI_rv)).
+  by rewrite hEGood_mu hEBad_mu.
+have hEGood_quad :
+    `E (mask_rv Good (muI_rv^TT *M muI_rv)) =
+    (Pr P Good) *: (mu1^T *m mu1).
+  have -> :
+      mask_rv Good (muI_rv^TT *M muI_rv) =
+      mask_rv Good (const_RV P (mu1^T *m mu1)).
+    apply/boolp.funext => u /=.
+    rewrite /mask_rv /mask_RV /mat_rv_mul /transpose_rv /muI_rv.
+    case Hu: (u \in Good).
+    - by rewrite /Ind Hu /=.
+    - by rewrite /Ind Hu /= !scale0r.
+  exact: E_mask_const.
+have hEBad_quad :
+    `E (mask_rv Bad (muI_rv^TT *M muI_rv)) =
+    (Pr P Bad) *: (mu0^T *m mu0).
+  have -> :
+      mask_rv Bad (muI_rv^TT *M muI_rv) =
+      mask_rv Bad (const_RV P (mu0^T *m mu0)).
+    apply/boolp.funext => u /=.
+    rewrite /mask_rv /mask_RV /mat_rv_mul /transpose_rv /muI_rv.
+    case Bu: (u \in Bad).
+    - have HuG : (u \in Good) = false.
+        move: Bu; rewrite BadC !inE => /negbTE ->.
+        by [].
+      by rewrite /Ind Bu /= HuG.
+    - by rewrite /Ind Bu /= !scale0r.
+  exact: E_mask_const.
+have hEQuad :
+    `E (muI_rv^TT *M muI_rv) =
+    (Pr P Good) *: (mu1^T *m mu1) + (Pr P Bad) *: (mu0^T *m mu0).
+  have hsplit :
+      muI_rv^TT *M muI_rv =
+      mask_rv Good (muI_rv^TT *M muI_rv) + mask_rv Bad (muI_rv^TT *M muI_rv).
+    apply/boolp.funext => u /=.
+    apply/matrixP => i j.
+    rewrite !mxE /mask_rv /mask_RV !/Ind /=.
+    case Hu: (u \in Good); case Hb: (u \in Bad) => /=.
+    - by move: Hb; rewrite BadC inE Hu.
+    - by rewrite ?mul1r ?mulr1 ?mul0r ?mulr0 ?add0r ?addr0.
+    - by rewrite ?mul1r ?mulr1 ?mul0r ?mulr0 ?add0r ?addr0.
+    - by move: Hb; rewrite BadC inE Hu.
+  have hExsplit :
+      `E (muI_rv^TT *M muI_rv) =
+      `E (mask_rv Good (muI_rv^TT *M muI_rv) +
+          mask_rv Bad (muI_rv^TT *M muI_rv)) :=
+    congr1 (fun Z => `E Z) hsplit.
+  rewrite hExsplit
+          (hEx_add _ (mask_rv Good (muI_rv^TT *M muI_rv))
+                     (mask_rv Bad (muI_rv^TT *M muI_rv))).
+  by rewrite hEGood_quad hEBad_quad.
+have CovMuIEx := @Cov_Ex R U d P muI_rv muI_rv.
+rewrite /Cov_muI CovMuIEx hEQuad hEmuI.
+have hPrGood : Pr P Good = 1 - Pr P Bad.
+  by rewrite BadC Pr_to_cplt.
+rewrite hPrGood /eps.
+apply/matrixP => i j; rewrite !mxE.
+rewrite !big_ord1 !mxE.
+rewrite ?big_ord1 ?mxE.
+ring.
+Qed.
 Qed.
 
 
