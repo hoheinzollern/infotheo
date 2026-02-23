@@ -1127,6 +1127,27 @@ Hypothesis A_orth_diag :
         A = Q *m (diag_mx sp) *m Q^T &
         forall i, sp 0 i <= lambda_max].
 
+(*
+w^T diag(sp) w = \sum sp_i w_i^2
+*)
+Lemma qf_diag (w sp : 'rV[R]_d) :
+  (w *m (diag_mx sp) *m w^T) 0 0 = \sum_i (sp 0 i * (w 0 i)^+2).
+Proof.
+rewrite -mulmxA mul_diag_mx !mxE.
+apply: eq_bigr => i _.
+by rewrite !mxE expr2 mulrCA.
+Qed.
+
+(*
+w^T w = sum w_i^2
+*)
+Lemma qf_self (w : 'rV[R]_d) :
+  (w *m w^T) 0 0 = \sum_i (w 0 i)^+2.
+Proof.
+rewrite mxE.
+apply: eq_bigr => i _.
+by rewrite !mxE expr2.
+Qed.
 
 End rayleigh.
 
