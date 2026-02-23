@@ -839,6 +839,55 @@ Let mu1  := cEx_Ind_vec Good Y.
 Let mu0  := cEx_Ind_vec Bad Y.
 
 
+(* E [ X | I] as RV：Good as mu1，Bad as mu0 *)
+Definition muI_rv : {RV P -> 'rV[R]_d} :=
+  fun u => if u \in Good then mu1 else mu0.
+
+(* Covairance *)
+Definition Cov_all : 'M[R]_(d,d) := Cov Y Y.
+
+Definition ECov_cond : 'M[R]_(d,d) := (1 - eps) *: Sigma1 + eps *: Sigma0.
+
+Definition Cov_muI : 'M[R]_(d,d) := Cov muI_rv muI_rv.
+
+(* Law of total covariance for the Good/Bad split; proof deferred *) 
+(*
+Apply law of total covariance on Y
+Cov[Y] = E[{Cov(Y | I)] + Cov(E[Y \mid I]) 
+where Y is the distribution: 
+Y = 1_{Good} X' + (1 - 1_{Good}) E
+*)
+Lemma Cov_total : Bad = ~: Good -> Cov_all = ECov_cond + Cov_muI.
+Proof.  
+move=> BadC.
+pose Igb : {RV P -> bool} := fun u => u \in Good.
+have hFg : finset (Igb @^-1 true) = Good.
+  apply/setP => u; rewrite !inE /Igb /=.
+  by case Hu: (u \in Good).
+have hFb : finset (Igb @^-1 false) = Bad.
+  apply/setP => u; rewrite !inE /Igb /= BadC !inE.
+  by [].
+have hmu :
+    muZ_rv (d:=d) (P:=P) (A:=bool) Y Igb = muI_rv.
+  apply/boolp.funext => u /=.
+  rewrite /muZ_rv /mu_given_Z /muI_rv /Igb /mu1 /mu0.
+  case Hu: (u \in Good).
+  - by rewrite hFg.
+  - by rewrite hFb.
+have hECov :
+    ECov_given_Z (d:=d) (P:=P) (A:=bool) Y Igb = ECov_cond.
+  rewrite /ECov_given_Z /ECov_cond /eps /Sigma1 /Sigma0 /Cov_given_Z.
+  rewrite big_bool /= hFb hFg addrC.
+  have hPrGood : Pr P Good = 1 - Pr P Bad.
+    by rewrite BadC Pr_to_cplt.
+  by rewrite hPrGood.
+have htc := @law_total_covariance R d U P bool Y Igb.
+rewrite /Cov_all /Cov_muI hECov hmu in htc.
+exact: htc.
+Qed.
+Qed.
+
+
 End test_total_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
