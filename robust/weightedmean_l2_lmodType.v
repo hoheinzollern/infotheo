@@ -703,6 +703,30 @@ Proof.
   by rewrite hPrF scaler_suml.
 Qed.
 
+(* Masked mixed terms reduce to Pr(F) * mu^T mu 
+E[1_{Z = a} \mu_a Y^T] = P(Z = a) \mu_a \mu_a^T 
+where
+\mu_a = E[Y | Z = a]
+*)
+Lemma E_mask_mu_left a :
+  `E (mask_rv (Fz a) ((mu_given_Z a)^T *M Y)) =
+  (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+Proof.
+  rewrite mask_rv_const_mul E_mat_scalel_RV.
+  by rewrite Emask_cEx_vec scalemxAr.
+Qed.
+
+Lemma E_mask_mu_right a :
+  `E (mask_rv (Fz a) (Y^TT *M (mu_given_Z a))) =
+  (Pr P (Fz a)) *: ((mu_given_Z a)^T *m (mu_given_Z a)).
+Proof.
+  rewrite /mu_given_Z.
+  rewrite mask_rv_mul_const E_mat_scalel_RV_r.
+  rewrite -mask_rv_transpose E_transpose Emask_cEx_vec.
+  rewrite [((Pr P (Fz a)) *: cEx_Ind_vec (Fz a) Y)^T]linearZ /=.
+  by rewrite scalemxAl.
+Qed.
+
 End total_covariance. 
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
