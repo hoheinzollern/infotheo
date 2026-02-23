@@ -495,6 +495,24 @@ Proof.
       move: PF0; by rewrite PF0' eq_refl.
     by rewrite scalerKV ?PF0'.
 Qed.
+
+(*
+For const v, E[1_F * v ] = P(F) * v
+*)
+Lemma E_mask_const {V : lmodType R} (F : {set U}) (v : V) :
+  `E (mask_rv F (const_RV P (T := V) v)) = (Pr P F) *: v.
+Proof.
+  rewrite /mask_rv /mask_RV /Ex /const_RV /=.
+  transitivity (\sum_(u in U) (P u * Ind F u) *: v).
+    apply: eq_bigr => u _.
+    by rewrite scalerA.
+  rewrite -scaler_suml.
+  have -> : \sum_(u in U) (P u * Ind F u) = \sum_(u in F) P u.
+    rewrite [in RHS]big_mkcond /=.
+    apply: eq_bigr => u _; rewrite /Ind.
+    by case: ifPn => _ /=; rewrite ?mulr1 ?mulr0.
+  by rewrite /Pr.
+Qed.
 End conditional_covariance.
 
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
