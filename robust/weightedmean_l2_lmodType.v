@@ -816,6 +816,15 @@ Qed.
 
 End total_covariance. 
 
+
+Section test_total_covariance.
+Context {R : realType}. 
+Variables (m n d : nat).
+Variables (U : finType) (P : R.-fdist U). 
+
+
+End test_total_covariance.
+
 Definition eigenvalue_rv (n : nat) (g : {RV P -> 'M[R]_n}) (a: {RV P -> R}) 
  := forall u, eigenvalue (g u) (a u).
 
