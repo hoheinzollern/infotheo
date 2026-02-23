@@ -822,6 +822,22 @@ Context {R : realType}.
 Variables (m n d : nat).
 Variables (U : finType) (P : R.-fdist U). 
 
+(* Good Data Sample, Bad Data Sample *)
+Variables (Good Bad : {set U}). 
+
+Variables (X' E : {RV P -> 'rV[R]_d}). (* X' 与 E in Lemma 2.7 *)
+
+(* Y as an indicator RV *)
+Definition Y : {RV P -> 'rV[R]_d} :=
+  fun u => if u \in Good then X' u else E u.
+
+Let eps  := Pr P Bad.
+Let Sigma1 := cCov Good Y.   (* Σ_{X'} *)
+Let Sigma0 := cCov Bad Y.    (* Σ_E *)
+
+Let mu1  := cEx_Ind_vec Good Y.
+Let mu0  := cEx_Ind_vec Bad Y.
+
 
 End test_total_covariance.
 
