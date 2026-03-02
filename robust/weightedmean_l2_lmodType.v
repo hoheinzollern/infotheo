@@ -1245,8 +1245,14 @@ Admitted.
 *)
 
 (* *d comes from robot-coq *) 
+(*
+We are using Euclidean norm here, 
+|v| = \sqrt{\sum_i v_i^2}
+instrad of matrix norm 
+|v|_mx = \max |v_i|
+*)
 Definition stable (S : {set U}) (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), mx_norm v = 1 -> 
+  forall (v: 'rV[R]_d), norm v = 1 -> 
   forall (S' : {set U}), S' \subset S -> 
   Pr P S' >= (1 - eps) * Pr P S -> 
   ( `| (Pr P S')^-1 * \sum_(u in S') (v *d (X u - mu)) | <= delta )
@@ -1254,7 +1260,7 @@ Definition stable (S : {set U}) (mu: 'rV[R]_d)  :=
   <= delta^+2 / eps ).
 
 Definition stableT (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), mx_norm v = 1 -> 
+  forall (v: 'rV[R]_d), norm v = 1 -> 
   forall (S' : {set U}), Pr P S' >= (1 - eps) -> 
   ( `| (Pr P S')^-1 * \sum_(u in S') (v *d (X u - mu)) | <= delta )
 && ( `| (Pr P S')^-1 * \sum_(u in S') ((v *d (X u - mu)))^+2 - 1| 
@@ -1262,7 +1268,7 @@ Definition stableT (mu: 'rV[R]_d)  :=
 
 
 Definition stableT_rv (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), mx_norm v = 1 -> 
+  forall (v: 'rV[R]_d), norm v = 1 -> 
   forall (S' : {set U}), Pr P S' >= (1 - eps) -> 
   forall (PSneq0 : Pr P S' != 0), 
   let Q := fdist_cond PSneq0 in 
