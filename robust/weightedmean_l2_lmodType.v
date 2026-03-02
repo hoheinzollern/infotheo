@@ -1289,8 +1289,6 @@ Section subtractive_contamination.
 Local Open Scope ring_scope. 
 Context {R : realType}. 
 
-(* Indicator Variable here*)
-
 (* Q is an eps‑subtractive contamination of P if there exists an event Rset
    of probability 1 - eps under P, and Q is the mixture
      Q = (1 - eps) * (P conditioned on Rset) + eps * Qadv
@@ -1305,73 +1303,6 @@ Context {R : realType}.
 
 End subtractive_contamination.
 
-(**md**************************************************************************)
-(* # Bachmann-Landau notations: $f=o(e)$, $f=O(e)$                            *)
-(*                                                                            *)
-(* This library is very asymmetric, in multiple respects:                     *)
-(* - most rewrite rules can only be rewritten from left to right.             *)
-(*   e.g., an equation 'o_F f = 'O_G g can be used only from LEFT TO RIGHT    *)
-(* - conversely most small 'o_F f in your goal are very specific,             *)
-(*   only 'a_F f is mutable                                                   *)
-(*                                                                            *)
-(* Most notations are either parse only or print only.                        *)
-(* Indeed all the 'O_F notations contain a function which is NOT displayed.   *)
-(* This might be confusing as sometimes you might get 'O_F g = 'O_F g         *)
-(* and not be able to solve by reflexivity.                                   *)
-(*   - In order to have a look at the hidden function, rewrite showo.         *)
-(*   - Do not use showo during a normal proof.                                *)
-(*   - All theorems should be stated so that when an impossible reflexivity   *)
-(*     is encountered, it is of the form 'O_F g = 'O_F g so that you          *)
-(*     know you should use eqOE in order to generalize your 'O_F g            *)
-(*     to an arbitrary 'O_F g                                                 *)
-(*                                                                            *)
-(* In this file, F is a filter and V W X Y Z are normed spaces over K.        *)
-(*                                                                            *)
-(* To prove that f is a bigO of g near F, you should go back to filter        *)
-(* reasoning only as a last resort. To do so, use the view eqOP. Similarly,   *)
-(* you can use eqaddOP to prove that f is equal to g plus a bigO of e near F  *)
-(* using filter reasoning.                                                    *)
-(*                                                                            *)
-(* ## Parsable notations                                                      *)
-(* ```                                                                        *)
-(*    [bigO of f] == recovers the canonical structure of big-o of f           *)
-(*                   expands to itself                                        *)
-(*       f =O_F h == f is a bigO of h near F,                                 *)
-(*                   this is the preferred way for statements.                *)
-(*                   expands to the equation (f = 'O_F h)                     *)
-(*                   rewrite from LEFT to RIGHT only                          *)
-(*   f = g +O_F h == f is equal to g plus a bigO near F,                      *)
-(*                   this is the preferred way for statements.                *)
-(*                   expands to the equation (f = g + 'O_F h)                 *)
-(*                   rewrite from LEFT to RIGHT only                          *)
-(*                   /!\ When you have to prove                               *)
-(*                   (f =O_F h) or (f = g +O_F h).                            *)
-(*                   you must (apply: eqOE) as soon as possible in a proof    *)
-(*                   in order to turn it into 'a_O_F f with a shelved content *)
-(*                   /!\ under rare circumstances, a hint may do that for you *)
-(*   [O_F h of f] == returns a function with a bigO canonical structure       *)
-(*                   provably equal to f if f is indeed a bigO of h           *)
-(*                   provably equal to 0 otherwise                            *)
-(*                   expands to ('O_F h)                                      *)
-(*           'O_F == pattern to match a bigO with a specific F                *)
-(*             'O == pattern to match a bigO with a generic F                 *)
-(* f x =O_(x \near F) e x == alternative way of stating f =O_F e (provably    *)
-(*                   equal using the lemma eqOEx                              *)
-(* ```                                                                        *)
-(*                                                                            *)
-(* WARNING: The piece of syntax "=O_(" is only valid in the syntax            *)
-(*          "=O_(x \near F)", not in the syntax "=O_(x : U)".                 *)
-(*                                                                            *)
-(* ## Printing only notations:                                                *)
-(* ```                                                                        *)
-(*        {O_F f} == the type of functions that are a bigO of f near F        *)
-
-
-Section law_of_total_covariance.
-
-
-(* Law of total covariance *)
-End law_of_total_covariance.
 
 (*
 Fromalize Lemma 2.7 in Algorithmic High-Dimensional Robust Statistics
