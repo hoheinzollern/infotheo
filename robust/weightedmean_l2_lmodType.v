@@ -178,11 +178,53 @@ Qed.
 (* Cov[X, Y] = E[(X - E[X]) (Y - E[Y])^T] *)
 Definition Cov : 'M[R]_(d, d) :=
   (* transpose cannot apply on matrix/vector of "RV P -> 'rV[R]_d" *) 
-  `E ((X `-cst `E X)^TT *M (Y `-cst `E Y)). 
+  `E ((X `-cst `E X)^TT *M (Y `-cst `E Y)).   
 
-(* 
-\mathrm{Cov}[X, Y] = \mathbb{E}[X^T Y] - \mathbb{E}[X] \mathbb{E}[Y]^T
+Lemma linearM (a: 'rV[R]_d) (M : {RV P -> 'M[R]_(d, d)}) : 
+  a *m (`E M) = `E (a *M M).
+Proof.  
+  by rewrite E_mat_scalel_RV.
+Qed. 
+
+(*
+a^T (D D^T) a = (a^T D)^2
 *)
+Lemma qf_rank1_any (a Delta : 'rV[R]_d) :
+  (a *m (Delta^T *m Delta) *m a^T) 0 0 = (a *d Delta)^+2.
+Proof.
+have hmul : a *m (Delta^T *m Delta) *m a^T = (a *m Delta^T) *m (Delta *m a^T).
+  by rewrite !mulmxA.
+rewrite hmul (dotmulP a Delta) (dotmulP Delta a).
+rewrite -scalar_mxM !mxE.
+by rewrite dotmulC expr2.
+Qed.
+
+(*
+a (rM) a^T = r * (a M a^T) 
+*)
+Lemma qf_scale (r : R) (a : 'rV[R]_d) (M : 'M[R]_(d, d)) :
+  (a *m (r *: M) *m a^T) 0 0 = r * (a *m M *m a^T) 0 0.
+Proof.
+rewrite -scalemxAr.
+rewrite !mxE mulr_sumr.
+apply: eq_bigr => j _.
+by rewrite mxE mulrA.
+Qed.
+
+(* X = Y make sure we are computing Cov(X, X) *)
+Lemma cov_is_positive_semidefinite (a : 'rV[R]_d) :
+  X = Y -> (a *m Cov *m a^T) 0 0 >= 0.
+Proof.
+move=> XY.
+rewrite /Cov XY /Ex.
+rewrite mulmx_sumr mulmx_suml summxE.
+apply: sumr_ge0 => u _.
+rewrite qf_scale qf_rank1_any.
+apply: mulr_ge0.
+  exact: FDist.ge0.
+by rewrite sqr_ge0.
+Qed.
+
 
 Lemma trmxB {m n} (A B : 'M[R]_(m, n)) : (A - B)^T = A^T - B^T.
 Proof. by apply/matrixP => i j; rewrite !mxE. Qed.
