@@ -1363,11 +1363,21 @@ Variables (d: nat) (U : finType) (P : R.-fdist U) (V : lmodType R)
   (S : {set U}) (eps delta lambda: R).  
 
 Hypothesis eps0: 0 < eps. 
+Hypothesis eps_lt_half : eps < 2^-1.
 Hypothesis delta_ge_eps : delta >= eps. 
 Hypothesis lambda0: 0 <= lambda.
 (* Hypothesis X_stable_mu: *)
-Hypothesis lambda_eigen: forall a, eigenvalue (Cov Y) a -> a <= 1 + lambda.
+Hypothesis lambda_eigen: forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
+(* Hypothesis lambda_eigen: forall a, eigenvalue (Cov Y) a -> a <= 1 + lambda. *)
 Hypothesis S_eps: Pr P S = eps.
+Hypothesis badC : bad = ~: Good.
+Hypothesis bad_mass : Pr P bad = eps.
+Hypothesis Y_mix : forall u, Y u = (if u \in Good then X u else E u).
+Hypothesis Y_eig_bound : forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
+(* Temporary bridge assumption (to be discharged later via Rayleigh + spectral theorem). *)
+Hypothesis Y_rayleigh_unit :
+  forall v : 'rV[R]_d, norm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
+Hypothesis X_stable : @stableT_rv R d U P X eps delta mu. 
 
 
 (* Ind in proba.v *) 
