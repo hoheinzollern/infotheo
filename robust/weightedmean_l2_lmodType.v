@@ -1378,11 +1378,68 @@ Hypothesis Y_eig_bound : forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
 Hypothesis Y_rayleigh_unit :
   forall v : 'rV[R]_d, norm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
 Hypothesis X_stable : @stableT_rv R d U P X eps delta mu. 
+
 Let Ygb : {RV P -> 'rV[R]_d} := fun u => if u \in Good then X u else E u.
 Let Sigma1_gb : 'M[R]_(d,d) := cCov Good Ygb.
 Let Sigma0_gb : 'M[R]_(d,d) := cCov bad Ygb.
 Let mu1_gb : 'rV[R]_d := cEx_Ind_vec Good Ygb.
 Let mu0_gb : 'rV[R]_d := cEx_Ind_vec bad Ygb.
+
+Lemma one_sub_eps_ge_half : 2^-1 <= 1 - eps.
+Admitted.
+
+Lemma Y_eq_Ygb : Y = Ygb.
+Proof.
+apply/boolp.funext => u /=.
+by rewrite /Ygb Y_mix.
+Qed.
+
+
+Lemma Pr_bad_neq0 : Pr P bad != 0.
+Proof.
+apply/eqP => bad0.
+move: eps0.
+by rewrite -bad_mass bad0 ltxx.
+Qed.
+
+
+Lemma Pr_goodE : Pr P Good = 1 - eps.
+Proof.
+have hGood : Pr P Good = 1 - Pr P bad.
+  by rewrite badC Pr_to_cplt.
+by rewrite hGood bad_mass.
+Qed.
+
+Lemma half_lt1 : (2^-1 : R) < 1.
+Proof.
+have h2u : (2 : R) \is a GRing.unit by rewrite unitfE pnatr_eq0.
+have h20 : (0 : R) < 2 by rewrite ltr0n.
+have h21 : (1 : R) < 2 by rewrite ltr1n.
+move: (invr_lt1 h2u h20).
+by rewrite h21.
+Qed.
+
+Lemma Pr_good_ge : Pr P Good >= (1 - eps).
+Proof. by rewrite Pr_goodE. Qed.
+
+Lemma Pr_good_neq0 : Pr P Good != 0.
+Proof.
+  have hPG_pos : 0 < Pr P Good.
+  rewrite Pr_goodE subr_gt0.
+  exact: (lt_trans eps_lt_half half_lt1).
+apply/eqP => PG0.
+move: hPG_pos; by rewrite PG0 ltxx.
+Qed.
+
+Lemma delta_ge0 : 0 <= delta.
+Proof. exact: le_trans (ltW eps0) delta_ge_eps. Qed.
+
+Lemma eps_le1 : eps <= 1.
+Proof. exact: ltW (lt_trans eps_lt_half half_lt1). Qed.
+
+Lemma one_sub_eps_ge0 : 0 <= 1 - eps.
+Proof. by rewrite subr_ge0 eps_le1. Qed.
+
 
 
 (* Ind in proba.v *) 
