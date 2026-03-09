@@ -1455,41 +1455,140 @@ we need
   - lemma, totoal covariance and total expectation 
 *)
 
-
-
-
-Lemma Certificate_for_Empirical_Mean : 
-  exists C, mx_norm (`E Y - mu) <= C * (delta + Num.sqrt (eps * lambda)).
-Proof.
-pose I : {RV P -> R } := Ind S. (* move to let *)
-
-Check I.
-Check `Pr[I = 0]:R.
-Check Pr P S:R.
-Check Pr P S = eps.
-have: `Pr[I=0] = 1 - eps.
-
-Search `Pr[_=_] Pr.
-rewrite pfwd1E.
-have: finset (preim I (pred1 0)) = ~:S.
-apply /setP.
-move=> x. 
-rewrite !inE.
-rewrite /I.
-rewrite /Ind.
-case: ifPn => //=.
-Search (1 == 0).
-rewrite oner_eq0//. 
-rewrite eqxx//.
-
-(* 
-- Express (\epsilon, \delat) stable distribution
-- define total vartiation distance between two distributions
-- define mean and covariance of distribution (multi dimensional) 
-- define eigenvalues and eigenvectors of covariance matrix 
-- norm_L2 
+(*
+Given 
+- Pr(Good) >= 1 - eps
+- Pr(Good) != 0
+- v is unit vector. 
+Let Q be the condition distribution on Good 
+Q = L(X | Good) 
+Then 
+Q is \eps-\delta 0 stable.
 *)
-Abort.
+Lemma stable_good_inst
+  (PG_ge : Pr P Good >= (1 - eps))
+  (PGneq0 : Pr P Good != 0)
+  (v : 'rV[R]_d) :
+  norm v = 1 ->
+  let Q := fdist_cond PGneq0 in
+  ( `| Ex Q (fun u => (v *d (X u - mu)) : R^o) | <= delta )
+  && ( `| Ex Q (fun u => ((v *d (X u - mu)))^+2 : R^o) - 1|
+       <= delta^+2 / eps ).
+Proof.
+move=> hv.
+have h := X_stable hv PG_ge PGneq0.
+exact: h.
+Qed.
+
+(*
+1st prop of stable_good_inst 
+*)
+Lemma stable_good_mean
+  (PG_ge : Pr P Good >= (1 - eps))
+  (PGneq0 : Pr P Good != 0)
+  (v : 'rV[R]_d) :
+  norm v = 1 ->
+  let Q := fdist_cond PGneq0 in
+  `| Ex Q (fun u => (v *d (X u - mu)) : R^o) | <= delta.
+Proof.
+move=> hv.
+have /andP [h _] := stable_good_inst PG_ge PGneq0 hv.
+exact: h.
+Qed.
+
+(*
+2nd prop of stable_good_inst 
+*)
+Lemma stable_good_second
+  (PG_ge : Pr P Good >= (1 - eps))
+  (PGneq0 : Pr P Good != 0)
+  (v : 'rV[R]_d) :
+  norm v = 1 ->
+  let Q := fdist_cond PGneq0 in
+  `| Ex Q (fun u => ((v *d (X u - mu)))^+2 : R^o) - 1| <= delta^+2 / eps.
+Proof.
+move=> hv.
+have /andP [_ h] := stable_good_inst PG_ge PGneq0 hv.
+exact: h.
+Qed.
+
+(*
+Connencts Indicator and Single Poinr Probability
+Pr({u} \cap F) = 1_{u \in F} * P(u)
+*)
+Lemma Pr_set1I_ind (F : {set U}) (u : U) :
+  Pr P ([set u] :&: F) = (Ind F u) * P u.
+Proof.
+rewrite /Ind.
+case Hu: (u \in F).
+- have -> : [set u] :&: F = [set u].
+    apply/setP => x; rewrite !inE.
+    case Xu: (x == u); first by move/eqP: Xu => ->; rewrite Hu.
+    by [].
+  by rewrite Pr_set1 mul1r.
+- have -> : [set u] :&: F = set0.
+    apply/setP => x; rewrite !inE.
+    case Xu: (x == u); first by move/eqP: Xu => ->; rewrite Hu.
+    by [].
+  by rewrite Pr_set0 mul0r.
+Qed.
+
+
+(*
+1 / P(Good) E[1_Good Z] = E[Z | Good]
+*)
+Lemma Ex_good_cond_lmod (V0 : lmodType R) (Z : {RV P -> V0}) :
+  let Q := fdist_cond Pr_good_neq0 in Ex Q (fun u => Z u) = cEx_Ind_lmod Good Z.
+Proof.
+rewrite /cEx_Ind_lmod /Ex /mask_rv /mask_RV /=.
+rewrite scaler_sumr.
+apply: eq_bigr => u _.
+rewrite fdist_condE /cPr Pr_set1I_ind /Ind.
+case Hu: (u \in Good).
+- rewrite /= mul1r.
+  rewrite scale1r scalerA.
+  by rewrite mulrC.
+- by rewrite /= ?mul0r ?scale0r ?scaler0.
+Qed.
+
+(*
+1_Good Y = 1Good X
+*)
+Lemma mask_good_YgbX : mask_rv Good Ygb = mask_rv Good X.
+Proof.
+apply/boolp.funext => u /=.
+ rewrite /mask_rv /mask_RV /Ygb /Ind.
+ case Hu: (u \in Good).
+- by rewrite /=.
+- by rewrite /= !scale0r.
+Qed.
+
+(*
+E[Y | Good ] = E[X | Good]
+*)
+Lemma mu1_gbE : mu1_gb = cEx_Ind_vec Good X.
+Proof.
+rewrite /mu1_gb /cEx_Ind_vec /cEx_Ind_lmod.
+have hmask : mask_RV Good Ygb = mask_RV Good X by exact: mask_good_YgbX.
+by rewrite hmask.
+Qed.
+
+(*
+E[X | Good] = E[1_Good X] / Pr(Good)
+*)
+Lemma Ex_good_cond_vecX :
+  let Q := fdist_cond Pr_good_neq0 in Ex Q (fun u => X u) = mu1_gb.
+Proof.
+rewrite /mu1_gb /cEx_Ind_vec.
+have hmask : cEx_Ind_lmod Good Ygb = cEx_Ind_lmod Good X.
+  rewrite /cEx_Ind_lmod.
+  have hm : mask_RV Good Ygb = mask_RV Good X by exact: mask_good_YgbX.
+  by rewrite hm.
+rewrite hmask.
+exact: ((Ex_good_cond_lmod (V0 := 'rV[R]_d)) X).
+Qed.
+
+Qed.
 
 
 End Certificate_for_Empirical_Mean.
