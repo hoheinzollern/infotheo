@@ -1378,6 +1378,11 @@ Hypothesis Y_eig_bound : forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
 Hypothesis Y_rayleigh_unit :
   forall v : 'rV[R]_d, norm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
 Hypothesis X_stable : @stableT_rv R d U P X eps delta mu. 
+Let Ygb : {RV P -> 'rV[R]_d} := fun u => if u \in Good then X u else E u.
+Let Sigma1_gb : 'M[R]_(d,d) := cCov Good Ygb.
+Let Sigma0_gb : 'M[R]_(d,d) := cCov bad Ygb.
+Let mu1_gb : 'rV[R]_d := cEx_Ind_vec Good Ygb.
+Let mu0_gb : 'rV[R]_d := cEx_Ind_vec bad Ygb.
 
 
 (* Ind in proba.v *) 
