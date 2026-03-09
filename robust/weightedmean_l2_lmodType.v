@@ -1588,6 +1588,58 @@ rewrite hmask.
 exact: ((Ex_good_cond_lmod (V0 := 'rV[R]_d)) X).
 Qed.
 
+(*
+scale property:
+E [v (X  - m ) | Good ] = v E[X - m | Good] 
+m can be replaced by any constant vector.
+*)
+Lemma Ex_good_dot_sub_center (v m : 'rV[R]_d) :
+  Ex (fdist_cond Pr_good_neq0) (fun u => (v *d (X u - m)) : R^o) =
+  v *d (mu1_gb - m).
+Proof.
+pose Q := fdist_cond Pr_good_neq0.
+have hlin : v *d (Ex Q (fun u => X u)) = Ex Q (fun u => (v *d (X u)) : R^o).
+  rewrite /Ex.
+  rewrite (linear_sum (euclidean.dotmul v)).
+  apply: eq_bigr => u _.
+  by rewrite /= dotmulvZ.
+have hsub :
+    Ex Q (fun u => (v *d (X u - m)) : R^o) =
+    Ex Q (fun u => (v *d (X u)) : R^o) - (v *d m).
+  rewrite /Ex.
+  have -> :
+      \sum_(u in U) Q u * (v *d (X u - m)) =
+      \sum_(u in U) ((Q u * (v *d (X u))) - (Q u * (v *d m))).
+    apply: eq_bigr => u _.
+    by rewrite dotmulBr mulrBr.
+  rewrite sumrB /=.
+  have hconst : \sum_(u in U) (Q u * (v *d m)) = v *d m.
+    by rewrite -mulr_suml FDist.f1 mul1r.
+  by rewrite hconst.
+rewrite hsub.
+rewrite -(hlin).
+rewrite Ex_good_cond_vecX.
+by rewrite dotmulBr.
+Qed.
+
+(*
+E [v (X  - mu ) | Good ] = v (mu_X' - mu)
+*)
+Lemma Ex_good_dot_sub (v : 'rV[R]_d) :
+  Ex (fdist_cond Pr_good_neq0) (fun u => (v *d (X u - mu)) : R^o) =
+  v *d (mu1_gb - mu).
+Proof. exact: Ex_good_dot_sub_center. Qed.
+
+(*
+E [v ( X - mu_X') | Good ] = 0
+*)
+Lemma Ex_good_dot_center_mu1 (v : 'rV[R]_d) :
+  Ex (fdist_cond Pr_good_neq0) (fun u => (v *d (X u - mu1_gb)) : R^o) = 0.
+Proof.
+rewrite (Ex_good_dot_sub_center v mu1_gb).
+by rewrite subrr dotmulv0.
+Qed.
+
 Qed.
 
 
