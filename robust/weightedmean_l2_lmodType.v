@@ -1661,6 +1661,27 @@ move=> hv.
 have h := @Y_rayleigh_unit v hv.
 by rewrite Y_eq_Ygb in h.
 Qed.
+
+(** (1 - eps) v^T Sigma1_gb v + eps v^T Sigma0_gb v
+    + eps (1 - eps) (v . (mu1_gb - mu0_gb))^2 <= 1 + lambda.
+    This is the quadratic-form version of equation (2). *)
+Lemma eq2_qf_bound (v : 'rV[R]_d) :
+  norm v = 1 ->
+  (1 - eps) * (v *m Sigma1_gb *m v^T) 0 0
+  + eps * (v *m Sigma0_gb *m v^T) 0 0
+  + (eps * (1 - eps)) * (v *d (mu1_gb - mu0_gb))^+2 <= 1 + lambda.
+Proof.
+move=> hv.
+have hcov : (v *m Cov_all (d:=d) (P:=P) Good X E *m v^T) 0 0 <= 1 + lambda.
+  have h := qf_covYgb_upper hv.
+  by rewrite /Ygb /Cov_all in h.
+have hqf := @Cov_total_eq1_qf R d U P Good bad X E v badC.
+rewrite bad_mass in hqf.
+rewrite /Sigma1_gb /Sigma0_gb /mu1_gb /mu0_gb in hqf.
+move: hcov.
+by rewrite hqf.
+Qed.
+
 Qed.
 
 
