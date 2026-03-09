@@ -1640,6 +1640,27 @@ rewrite (Ex_good_dot_sub_center v mu1_gb).
 by rewrite subrr dotmulv0.
 Qed.
 
+(** For unit v, |v . (mu1_gb - mu)| <= delta.
+    This is the projection form of the first stability condition on Good. *)
+Lemma stable_good_mean_proj (v : 'rV[R]_d) :
+  norm v = 1 -> `| v *d (mu1_gb - mu) | <= delta.
+Proof.
+move=> hv.
+have h := stable_good_mean Pr_good_ge Pr_good_neq0 hv.
+move: h.
+rewrite -(Ex_good_dot_sub v).
+by [].
+Qed.
+
+(** For unit v, v^T Cov(Ygb) v <= 1 + lambda.
+    This is the Rayleigh upper bound used for the mixture covariance. *)
+Lemma qf_covYgb_upper (v : 'rV[R]_d) :
+  norm v = 1 -> (v *m Cov Ygb Ygb *m v^T) 0 0 <= 1 + lambda.
+Proof.
+move=> hv.
+have h := @Y_rayleigh_unit v hv.
+by rewrite Y_eq_Ygb in h.
+Qed.
 Qed.
 
 
