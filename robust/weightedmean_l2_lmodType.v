@@ -1682,6 +1682,45 @@ move: hcov.
 by rewrite hqf.
 Qed.
 
+(** Sigma1_gb = E[(X - mu1_gb)(X - mu1_gb)^T | Good].
+    This rewrites the Good conditional covariance as a conditional second moment. *)
+Lemma Sigma1_cond_matrix :
+  Ex (fdist_cond Pr_good_neq0)
+     (fun u => ((X u - mu1_gb)^T *m (X u - mu1_gb)) : 'M[R]_(d, d)) = Sigma1_gb.
+Proof.
+rewrite /Sigma1_gb /cCov.
+rewrite (Ex_good_cond_lmod (V0 := 'M[R]_(d, d))
+           (fun u => ((X u - mu1_gb)^T *m (X u - mu1_gb)) : 'M[R]_(d, d))).
+rewrite /cEx_Ind_lmod.
+have hmask_sub :
+    mask_rv Good (Ygb `-cst mu1_gb) = mask_rv Good (X `-cst mu1_gb).
+  by rewrite !mask_rv_sub mask_good_YgbX.
+rewrite hmask_sub.
+rewrite (mask_rv_mul Good (X `-cst mu1_gb) (X `-cst mu1_gb)).
+apply congr1.
+apply congr1.
+apply/boolp.funext => u /=.
+by rewrite /sub_RV_lmod /const_RV.
+Qed.
+
+(** v^T Sigma1_gb v = E[(v . (X - mu1_gb))^2 | Good].
+    This turns the covariance quadratic form into a conditional scalar second moment. *)
+Lemma Sigma1_qf_cond (v : 'rV[R]_d) :
+  (v *m Sigma1_gb *m v^T) 0 0 =
+  Ex (fdist_cond Pr_good_neq0)
+     (fun u => ((v *d (X u - mu1_gb))^+2) : R^o).
+Proof.
+have -> :
+    Sigma1_gb =
+    Ex (fdist_cond Pr_good_neq0)
+       (fun u => ((X u - mu1_gb)^T *m (X u - mu1_gb)) : 'M[R]_(d, d)).
+  exact: esym Sigma1_cond_matrix.
+rewrite /Ex.
+rewrite mulmx_sumr mulmx_suml.
+rewrite summxE.
+apply: eq_bigr => u _.
+by rewrite qf_scale qf_rank1_any.
+Qed.
 Qed.
 
 
