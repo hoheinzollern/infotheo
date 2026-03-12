@@ -1386,7 +1386,16 @@ Let mu1_gb : 'rV[R]_d := cEx_Ind_vec Good Ygb.
 Let mu0_gb : 'rV[R]_d := cEx_Ind_vec bad Ygb.
 
 Lemma one_sub_eps_ge_half : 2^-1 <= 1 - eps.
-Admitted.
+Proof.
+rewrite (_ : 2^-1 = 1 - 2^-1).
+rewrite lerB //. 
+rewrite ltW //.
+rewrite {2} (splitr 1).
+rewrite div1r.
+rewrite addrK. 
+exact.
+Qed.
+
 
 Lemma Y_eq_Ygb : Y = Ygb.
 Proof.
