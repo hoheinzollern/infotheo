@@ -726,38 +726,6 @@ Lemma sub_RV_neg (X Y : {RV P -> V}) :
   X `- Y = X `+ - Y.
 Proof. by []. Qed.
 
-Definition zero_rv : {RV P -> V} := 
-  fun u => 0. 
-
-Check {RV P -> V}.
-
-Lemma add_rvA : associative add_RV.
-Proof. 
-  move=> x y z; apply/boolp.funext=> u. 
-  by rewrite /add_RV addrA. 
-Qed.
-
-Lemma add_rvC : commutative add_RV.
-Proof. 
-  move=> x y; apply/boolp.funext=> u. 
-  by rewrite /add_RV addrC. 
-Qed.
-
-Lemma add_rv0l : left_id zero_rv add_RV.
-Proof. 
-  move=> x; apply/boolp.funext=> u. 
-  by rewrite /add_RV add0r. 
-Qed.
-
-Lemma add_rvNh : left_inverse zero_rv opp_RV add_RV.
-Proof. 
-  move=> x; apply/boolp.funext=> u. 
-  by rewrite /add_RV addNr. 
-Qed.
-
-HB.instance Definition _ := 
-  GRing.isZmodule.Build {RV P -> V} add_rvA add_rvC add_rv0l add_rvNh.
-
 End zmod_random_variables.
 
 Notation "X `- Y" := (X - Y) (only parsing) : proba_scope.
