@@ -1074,18 +1074,6 @@ by rewrite mulmxDr mulmxDl !mxE.
 Qed.
 
 (*
-v^T (a M)v  = a v^T M v
-*)
-Lemma qf_scale (a : R) (v : 'rV[R]_d) (M : 'M[R]_(d, d)) :
-  (v *m (a *: M) *m v^T) 0 0 = a * (v *m M *m v^T) 0 0.
-Proof.
-rewrite -scalemxAr.
-rewrite !mxE mulr_sumr.
-apply: eq_bigr => j _.
-by rewrite mxE mulrA.
-Qed.
-
-(*
 v^T (@D @D^T) v = (v^T @D)^2
 where
 @D = \mu_X' - \mu_E
