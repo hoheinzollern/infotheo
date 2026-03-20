@@ -380,7 +380,7 @@ Definition mask_rv {V : lmodType R} (F : {set U}) (X : {RV P -> V}) :=
 Lemma mask_rv_sub {V : lmodType R} (F : {set U}) (A B : {RV P -> V}) :
   mask_rv F (A `- B) = mask_rv F A `- mask_rv F B.
 Proof.
-  rewrite /mask_rv /mask_RV /sub_RV /=.
+  rewrite /mask_rv /mask_RV.
   apply/boolp.funext => u /=; by rewrite scalerBr.
 Qed.
 
@@ -388,7 +388,7 @@ Qed.
 Lemma mask_rv_add {V : lmodType R} (F : {set U}) (A B : {RV P -> V}) :
   mask_rv F (A + B) = mask_rv F A + mask_rv F B.
 Proof.
-  rewrite /mask_rv /mask_RV /add_RV /=.
+  rewrite /mask_rv /mask_RV.
   apply/boolp.funext => u /=; by rewrite scalerDr.
 Qed.
 
