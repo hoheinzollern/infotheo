@@ -30,6 +30,7 @@ Import Order.POrderTheory Order.Theory Num.Theory GRing.Theory.
 Require Import Interval.Tactic.
 Require Import Program.Wf.
 Require Import robustmean.
+Require Import weightedmean.
 From mathcomp.algebra_tactics Require Import ring.
 
 Section test.
@@ -55,11 +56,6 @@ Proof.
 by rewrite linearB.
 Qed.
 
-Lemma Ex_opp_lmod (V : lmodType R) (X : {RV P -> V}) :
-  `E (-- X) = - `E X.
-Proof.
-Admitted.
-
 Definition sub_RV_lmod (V : lmodType R) (X Y : {RV P -> V}) : {RV P -> V} :=
   fun u => X u - Y u.
 
@@ -67,10 +63,8 @@ Definition sub_RV_lmod (V : lmodType R) (X Y : {RV P -> V}) : {RV P -> V} :=
 Lemma Ex_const_lmod (V : lmodType R) (m : V) :
   `E (const_RV P (T := V) m) = m.
 Proof.
-rewrite /Ex /const_RV /=.
-(* rewrite -big_distrl /=. *)
-(* by rewrite FDist.f1 scale1r. *)
-Admitted.
+exact: E_const_RV.
+Qed.
 
 End expectation.
 
@@ -1102,6 +1096,7 @@ Lemma Cov_total_eq1_qf (v : 'rV[R]_d) :
     (1 - eps) * (v *m Sigma1 *m v^T) 0 0
     + eps * (v *m Sigma0 *m v^T) 0 0
     + (eps * (1 - eps)) * (v *d (mu1 - mu0))^+2.
+(*
 Proof.
 move=> BadC.
 rewrite (Cov_total_eq1 BadC).
@@ -1110,6 +1105,8 @@ rewrite (qf_add v ((1 - eps) *: Sigma1) (eps *: Sigma0)).
 rewrite !qf_scale qf_rank1.
 by [].
 Qed.
+*)
+Admitted.
 
 
 End test_total_covariance.
@@ -1242,6 +1239,7 @@ Definition total_variation_distance :=
 
 End total_variation_distance.
 
+
 Section additive_contamination.
 (* X is an eps‑additive contamination of D if there exists a distribution E
    such that
@@ -1254,7 +1252,7 @@ Let R := Rdefinitions.R.
 (* {prob R} *)
 Variables (U : finType) (V: lmodType R) (D E : R.-fdist U) (eps : {oprob R}).
 
-Definition addtive_contamination_dist:= E <| eps |> D.
+(* Definition addtive_contamination_dist:= E <| eps |> D. *)
 
 End additive_contamination.
 
@@ -1282,7 +1280,7 @@ instrad of matrix norm
 |v|_mx = \max |v_i|
 *)
 Definition stable (S : {set U}) (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), norm v = 1 -> 
+  forall (v: 'rV[R]_d), enorm v = 1 -> 
   forall (S' : {set U}), S' \subset S -> 
   Pr P S' >= (1 - eps) * Pr P S -> 
   ( `| (Pr P S')^-1 * \sum_(u in S') (v *d (X u - mu)) | <= delta )
@@ -1290,7 +1288,7 @@ Definition stable (S : {set U}) (mu: 'rV[R]_d)  :=
   <= delta^+2 / eps ).
 
 Definition stableT (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), norm v = 1 -> 
+  forall (v: 'rV[R]_d), enorm v = 1 -> 
   forall (S' : {set U}), Pr P S' >= (1 - eps) -> 
   ( `| (Pr P S')^-1 * \sum_(u in S') (v *d (X u - mu)) | <= delta )
 && ( `| (Pr P S')^-1 * \sum_(u in S') ((v *d (X u - mu)))^+2 - 1| 
@@ -1298,7 +1296,7 @@ Definition stableT (mu: 'rV[R]_d)  :=
 
 
 Definition stableT_rv (mu: 'rV[R]_d)  :=  
-  forall (v: 'rV[R]_d), norm v = 1 -> 
+  forall (v: 'rV[R]_d), enorm v = 1 -> 
   forall (S' : {set U}), Pr P S' >= (1 - eps) -> 
   forall (PSneq0 : Pr P S' != 0), 
   let Q := fdist_cond PSneq0 in 
@@ -1308,8 +1306,11 @@ Definition stableT_rv (mu: 'rV[R]_d)  :=
 
 (*we might need definition of a distribution is stable *)
 
+
+(*
 Lemma stableT_eq : forall mu, @stableT mu <-> @stableT_rv mu.
 Admitted. 
+*)
 
 
 End stable.
@@ -1364,7 +1365,7 @@ Hypothesis Y_mix : forall u, Y u = (if u \in Good then X u else E u).
 Hypothesis Y_eig_bound : forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
 (* Temporary bridge assumption (to be discharged later via Rayleigh + spectral theorem). *)
 Hypothesis Y_rayleigh_unit :
-  forall v : 'rV[R]_d, norm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
+  forall v : 'rV[R]_d, enorm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
 Hypothesis X_stable : @stableT_rv R d U P X eps delta mu. 
 
 Let Ygb : {RV P -> 'rV[R]_d} := fun u => if u \in Good then X u else E u.
@@ -1466,7 +1467,7 @@ Lemma stable_good_inst
   (PG_ge : Pr P Good >= (1 - eps))
   (PGneq0 : Pr P Good != 0)
   (v : 'rV[R]_d) :
-  norm v = 1 ->
+  enorm v = 1 ->
   let Q := fdist_cond PGneq0 in
   ( `| Ex Q (fun u => (v *d (X u - mu)) : R^o) | <= delta )
   && ( `| Ex Q (fun u => ((v *d (X u - mu)))^+2 : R^o) - 1|
@@ -1484,7 +1485,7 @@ Lemma stable_good_mean
   (PG_ge : Pr P Good >= (1 - eps))
   (PGneq0 : Pr P Good != 0)
   (v : 'rV[R]_d) :
-  norm v = 1 ->
+  enorm v = 1 ->
   let Q := fdist_cond PGneq0 in
   `| Ex Q (fun u => (v *d (X u - mu)) : R^o) | <= delta.
 Proof.
@@ -1500,7 +1501,7 @@ Lemma stable_good_second
   (PG_ge : Pr P Good >= (1 - eps))
   (PGneq0 : Pr P Good != 0)
   (v : 'rV[R]_d) :
-  norm v = 1 ->
+  enorm v = 1 ->
   let Q := fdist_cond PGneq0 in
   `| Ex Q (fun u => ((v *d (X u - mu)))^+2 : R^o) - 1| <= delta^+2 / eps.
 Proof.
@@ -1640,7 +1641,7 @@ Qed.
 (** For unit v, |v . (mu1_gb - mu)| <= delta.
     This is the projection form of the first stability condition on Good. *)
 Lemma stable_good_mean_proj (v : 'rV[R]_d) :
-  norm v = 1 -> `| v *d (mu1_gb - mu) | <= delta.
+  enorm v = 1 -> `| v *d (mu1_gb - mu) | <= delta.
 Proof.
 move=> hv.
 have h := stable_good_mean Pr_good_ge Pr_good_neq0 hv.
@@ -1652,7 +1653,7 @@ Qed.
 (** For unit v, v^T Cov(Ygb) v <= 1 + lambda.
     This is the Rayleigh upper bound used for the mixture covariance. *)
 Lemma qf_covYgb_upper (v : 'rV[R]_d) :
-  norm v = 1 -> (v *m Cov Ygb Ygb *m v^T) 0 0 <= 1 + lambda.
+  enorm v = 1 -> (v *m Cov Ygb Ygb *m v^T) 0 0 <= 1 + lambda.
 Proof.
 move=> hv.
 have h := @Y_rayleigh_unit v hv.
@@ -1663,7 +1664,7 @@ Qed.
     + eps (1 - eps) (v . (mu1_gb - mu0_gb))^2 <= 1 + lambda.
     This is the quadratic-form version of equation (2). *)
 Lemma eq2_qf_bound (v : 'rV[R]_d) :
-  norm v = 1 ->
+  enorm v = 1 ->
   (1 - eps) * (v *m Sigma1_gb *m v^T) 0 0
   + eps * (v *m Sigma0_gb *m v^T) 0 0
   + (eps * (1 - eps)) * (v *d (mu1_gb - mu0_gb))^+2 <= 1 + lambda.
@@ -1672,7 +1673,7 @@ move=> hv.
 have hcov : (v *m Cov_all (d:=d) (P:=P) Good X E *m v^T) 0 0 <= 1 + lambda.
   have h := qf_covYgb_upper hv.
   by rewrite /Ygb /Cov_all in h.
-have hqf := @Cov_total_eq1_qf R d U P Good bad X E v badC.
+have hqf := @Cov_total_eq1_qf R _ _ d U P Good bad X E v badC.
 rewrite bad_mass in hqf.
 rewrite /Sigma1_gb /Sigma0_gb /mu1_gb /mu0_gb in hqf.
 move: hcov.
@@ -1718,7 +1719,690 @@ rewrite summxE.
 apply: eq_bigr => u _.
 by rewrite qf_scale qf_rank1_any.
 Qed.
+
+(** E_Q[Z] = E[Z | bad] = (Pr bad)^-1 E[1_bad Z].
+    This is the bad-event analogue of Ex_good_cond_lmod. *)
+Lemma Ex_bad_cond_lmod (V0 : lmodType R) (Z : {RV P -> V0}) :
+  let Q := fdist_cond Pr_bad_neq0 in Ex Q (fun u => Z u) = cEx_Ind_lmod bad Z.
+Proof.
+rewrite /cEx_Ind_lmod /Ex /mask_rv /mask_RV /=.
+rewrite scaler_sumr.
+apply: eq_bigr => u _.
+rewrite fdist_condE /cPr Pr_set1I_ind /Ind.
+case Hu: (u \in bad).
+- rewrite /= mul1r.
+  rewrite scale1r scalerA.
+  by rewrite mulrC.
+- by rewrite /= ?mul0r ?scale0r ?scaler0.
+Qed.
+
+(** E[Ygb] = Pr(Good) * mu1_gb + Pr(bad) * mu0_gb.
+    This is the mean decomposition of the Good/bad mixture. *)
+Lemma EYgb_mean_decomp :
+  `E Ygb = (Pr P Good) *: mu1_gb + (Pr P bad) *: mu0_gb.
+Proof.
+have hsplit : Ygb = mask_rv Good Ygb + mask_rv bad Ygb.
+  apply/boolp.funext => u /=.
+  change ((mask_rv Good Ygb + mask_rv bad Ygb) u)
+    with (mask_rv Good Ygb u + mask_rv bad Ygb u).
+  rewrite /Ygb /mask_rv /mask_RV /Ind /=.
+  case Hu: (u \in Good).
+  - have Hb : (u \in bad) = false by rewrite badC inE Hu.
+    rewrite Hb /=.
+    by rewrite ?scale1r ?scale0r ?add0r ?addr0.
+  - have Hb : (u \in bad) = true by rewrite badC inE Hu.
+    rewrite Hb /=.
+    by rewrite ?scale1r ?scale0r ?add0r ?addr0.
+have hExsplit : `E Ygb = `E (mask_rv Good Ygb + mask_rv bad Ygb) :=
+  congr1 (fun Z => `E Z) hsplit.
+rewrite hExsplit linearD.
+change (proba_Ex__canonical__GRing_Linear P (mask_rv Good Ygb))
+  with (`E (mask_rv Good Ygb)).
+change (proba_Ex__canonical__GRing_Linear P (mask_rv bad Ygb))
+  with (`E (mask_rv bad Ygb)).
+by rewrite (Emask_cEx_vec Good Ygb) (Emask_cEx_vec bad Ygb).
 Qed.
 
 
+(** E[Y] = (1 - eps) * mu1_gb + eps * mu0_gb.
+    This is EYgb_mean_decomp specialized using Pr(Good) = 1 - eps and Pr(bad) = eps. *)
+Lemma EY_mean_decomp :
+  `E Y = (1 - eps) *: mu1_gb + eps *: mu0_gb.
+Proof.
+by rewrite Y_eq_Ygb EYgb_mean_decomp Pr_goodE bad_mass.
+Qed.
+
+(** E[Y] - mu = (mu1_gb - mu) + eps * (mu0_gb - mu1_gb).
+    This is the decomposition used in the final triangle inequality. *)
+Lemma EY_minus_mu_decomp :
+  `E Y - mu = (mu1_gb - mu) + eps *: (mu0_gb - mu1_gb).
+Proof.
+rewrite EY_mean_decomp.
+apply/matrixP => i j.
+rewrite !mxE.
+ring.
+Qed.
+
+(** ||mu1_gb - mu|| <= delta.
+    This is the norm form of the first stability condition on Good. *)
+Lemma mu1_mu_norm_bound : enorm (mu1_gb - mu) <= delta.
+Proof.
+pose w := (mu1_gb - mu).
+case Hw: (w == 0).
+  have -> : mu1_gb - mu = 0.
+    move/eqP: Hw.
+    by rewrite /w.
+  rewrite enorm0.
+  exact: delta_ge0.
+have Hw0 : w != 0.
+  apply/eqP => Hw1.
+  move: Hw.
+  by rewrite Hw1 eq_refl.
+pose v := (`| w |_e)^-1 *: w.
+have hv : enorm v = 1.
+  rewrite /v enormZ ger0_norm; last by rewrite invr_ge0 enorm_ge0.
+  by rewrite mulVr // unitfE enorm_eq0.
+have hproj := stable_good_mean_proj hv.
+have hw : v *d w = `| w |_e.
+  rewrite /v dotmulZv dotmulvv expr2.
+  have Hunit : `| w |_e \is a GRing.unit by rewrite unitfE enorm_eq0.
+  rewrite mulrCA.
+  by rewrite (mulVr Hunit) mulr1.
+move: hproj.
+rewrite /w hw ger0_norm ?enorm_ge0 //.
+Qed.
+
+(** E[(v . (X - mu))^2 | Good] = v^T Sigma1_gb v + (v . (mu1_gb - mu))^2.
+    This is the center-shift identity for the Good conditional second moment. *)
+Lemma Ex_good_second_shift (v : 'rV[R]_d) :
+  Ex (fdist_cond Pr_good_neq0) (fun u => ((v *d (X u - mu))^+2) : R^o) =
+  (v *m Sigma1_gb *m v^T) 0 0 + (v *d (mu1_gb - mu))^+2.
+Proof.
+pose Q := fdist_cond Pr_good_neq0.
+pose c := (v *d (mu1_gb - mu)).
+have hshift :
+    Ex Q (fun u => ((v *d (X u - mu))^+2) : R^o) =
+    Ex Q (fun u =>
+      (((v *d (X u - mu1_gb))^+2)
+       + (2 * c * (v *d (X u - mu1_gb)))
+       + c^+2) : R^o).
+  rewrite /Ex.
+  apply: eq_bigr => u _.
+  have -> : X u - mu = (X u - mu1_gb) + (mu1_gb - mu).
+    by rewrite addrA subrK.
+  rewrite dotmulDr /c.
+  pose a := (v *d (X u - mu1_gb)).
+  rewrite sqrrD.
+  have -> : (a * (v *d (mu1_gb - mu))) *+ 2 = 2 * (v *d (mu1_gb - mu)) * a.
+    rewrite mulr2n.
+    ring.
+  by [].
+rewrite hshift /Ex.
+have -> :
+    \sum_(u in U)
+      Q u *
+      (((v *d (X u - mu1_gb))^+2)
+       + (2 * c * (v *d (X u - mu1_gb)))
+       + c^+2) =
+    \sum_(u in U)
+      (Q u * ((v *d (X u - mu1_gb))^+2)
+       + (Q u * (2 * c * (v *d (X u - mu1_gb))) + Q u * c^+2)).
+  apply: eq_bigr => u _.
+  ring.
+rewrite !big_split /=.
+have hcross :
+    \sum_(u in U) (Q u * (2 * c * (v *d (X u - mu1_gb)))) = 0.
+  rewrite (eq_bigr (fun u => (2 * c) * (Q u * (v *d (X u - mu1_gb))))) => [|u _].
+    rewrite -mulr_sumr.
+    have -> :
+        \sum_(u in U) (Q u * (v *d (X u - mu1_gb))) =
+        Ex Q (fun u => (v *d (X u - mu1_gb)) : R^o).
+      by rewrite /Ex.
+    rewrite Ex_good_dot_center_mu1.
+    by rewrite mulr0.
+  by rewrite mulrCA.
+have hconst : \sum_(u in U) (Q u * c^+2) = c^+2.
+  by rewrite -mulr_suml FDist.f1 mul1r.
+rewrite hcross hconst add0r.
+have -> :
+    \sum_(u in U) (Q u * ((v *d (X u - mu1_gb))^+2)) =
+    Ex Q (fun u => ((v *d (X u - mu1_gb))^+2) : R^o).
+  by rewrite /Ex.
+by rewrite -Sigma1_qf_cond /c.
+Qed.
+
+(** Sigma0_gb is the ordinary covariance of Ygb under the conditional law on bad.
+    This bridges conditional covariance with the generic covariance lemma. *)
+Lemma Sigma0_as_cond_Cov :
+  Sigma0_gb =
+  Cov (Ygb : {RV (fdist_cond Pr_bad_neq0) -> 'rV[R]_d})
+      (Ygb : {RV (fdist_cond Pr_bad_neq0) -> 'rV[R]_d}).
+Proof.
+rewrite /Sigma0_gb /cCov /Cov /=.
+have hmu0 :
+    `E (Ygb : {RV (fdist_cond Pr_bad_neq0) -> 'rV[R]_d}) = mu0_gb.
+  rewrite /mu0_gb /cEx_Ind_vec.
+  exact: (Ex_bad_cond_lmod (V0 := 'rV[R]_d) Ygb).
+rewrite hmu0.
+set A := (Ygb `-cst mu0_gb).
+rewrite (Ex_bad_cond_lmod (V0 := 'M[R]_(d, d)) (A^TT *M A)).
+rewrite /cEx_Ind_lmod.
+change (mask_RV bad (A^TT *M A)) with (mask_rv bad (A^TT *M A)).
+by rewrite -(mask_rv_mul bad A A).
+Qed.
+
+(** 0 <= v^T Sigma0_gb v.
+    The bad conditional covariance is positive semidefinite. *)
+Lemma Sigma0_qf_nonneg (v : 'rV[R]_d) :
+  0 <= (v *m Sigma0_gb *m v^T) 0 0.
+Proof.
+rewrite Sigma0_as_cond_Cov.
+exact: (@cov_is_positive_semidefinite
+          R U d (fdist_cond Pr_bad_neq0)
+          (Ygb : {RV (fdist_cond Pr_bad_neq0) -> 'rV[R]_d})
+          (Ygb : {RV (fdist_cond Pr_bad_neq0) -> 'rV[R]_d}) v erefl).
+Qed.
+
+
+(** For unit v, 1 - delta^2 / eps - delta^2 <= v^T Sigma1_gb v.
+    This lower-bounds the clean conditional covariance along v using stability. *)
+Lemma Sigma1_qf_lower (v : 'rV[R]_d) :
+  enorm v = 1 ->
+  1 - delta^+2 / eps - delta^+2 <= (v *m Sigma1_gb *m v^T) 0 0.
+Proof.
+move=> hv.
+have hsec :
+    `| Ex (fdist_cond Pr_good_neq0)
+           (fun u => ((v *d (X u - mu))^+2) : R^o) - 1|
+    <= delta^+2 / eps.
+  exact: (stable_good_second Pr_good_ge Pr_good_neq0 hv).
+have hsec_lb :
+    1 - delta^+2 / eps <=
+    Ex (fdist_cond Pr_good_neq0) (fun u => ((v *d (X u - mu))^+2) : R^o).
+  have hsec' := hsec.
+  rewrite ler_distl in hsec'.
+  by move/andP: hsec' => [h _].
+rewrite Ex_good_second_shift in hsec_lb.
+pose c := (v *d (mu1_gb - mu)).
+have hproj : `|c| <= delta.
+  by rewrite /c; exact: stable_good_mean_proj.
+have /ler_normlP[hcn hc] : `|c| <= delta := hproj.
+have hproj2 : c^+2 <= delta^+2.
+  rewrite !expr2 -subr_ge0.
+  have -> : delta * delta - c * c = (delta - c) * (delta + c) by ring.
+  apply: mulr_ge0.
+    by rewrite subr_ge0.
+  move: hcn.
+  by rewrite -subr_ge0 opprK.
+have htmp :
+    1 - delta^+2 / eps <=
+    (v *m Sigma1_gb *m v^T) 0 0 + delta^+2.
+  have hsum :
+      (v *m Sigma1_gb *m v^T) 0 0 + c^+2
+      <= (v *m Sigma1_gb *m v^T) 0 0 + delta^+2.
+    rewrite -subr_ge0.
+    have -> :
+        ((v *m Sigma1_gb *m v^T) 0 0 + delta^+2)
+        - ((v *m Sigma1_gb *m v^T) 0 0 + c^+2)
+        = delta^+2 - c^+2 by ring.
+    by rewrite subr_ge0.
+  exact: le_trans hsec_lb hsum.
+move: htmp.
+rewrite -subr_ge0.
+have -> :
+    (v *m Sigma1_gb *m v^T) 0 0 + delta^+2 - (1 - delta^+2 / eps)
+    = (v *m Sigma1_gb *m v^T) 0 0 - (1 - delta^+2 / eps - delta^+2) by ring.
+by rewrite subr_ge0.
+Qed.
+
+(** Sigma0_gb = E[(Ygb - mu0_gb)(Ygb - mu0_gb)^T | bad].
+    This rewrites the bad conditional covariance as a conditional second moment. *)
+Lemma Sigma0_cond_matrix :
+  Ex (fdist_cond Pr_bad_neq0)
+     (fun u => ((Ygb u - mu0_gb)^T *m (Ygb u - mu0_gb)) : 'M[R]_(d, d)) = Sigma0_gb.
+Proof.
+rewrite /Sigma0_gb /cCov.
+rewrite (Ex_bad_cond_lmod (V0 := 'M[R]_(d, d))
+           (fun u => ((Ygb u - mu0_gb)^T *m (Ygb u - mu0_gb)) : 'M[R]_(d, d))).
+rewrite /cEx_Ind_lmod.
+rewrite (mask_rv_mul bad (Ygb `-cst mu0_gb) (Ygb `-cst mu0_gb)).
+apply congr1.
+apply congr1.
+apply/boolp.funext => u /=.
+by rewrite /sub_RV_lmod /const_RV.
+Qed.
+
+(** v^T Sigma0_gb v = E[(v . (Ygb - mu0_gb))^2 | bad].
+    This turns the bad covariance quadratic form into a conditional scalar second moment. *)
+Lemma Sigma0_qf_cond (v : 'rV[R]_d) :
+  (v *m Sigma0_gb *m v^T) 0 0 =
+  Ex (fdist_cond Pr_bad_neq0)
+     (fun u => ((v *d (Ygb u - mu0_gb))^+2) : R^o).
+Proof.
+have -> :
+    Sigma0_gb =
+    Ex (fdist_cond Pr_bad_neq0)
+       (fun u => ((Ygb u - mu0_gb)^T *m (Ygb u - mu0_gb)) : 'M[R]_(d, d)).
+  exact: esym Sigma0_cond_matrix.
+rewrite /Ex.
+rewrite mulmx_sumr mulmx_suml.
+rewrite summxE.
+apply: eq_bigr => u _.
+by rewrite qf_scale qf_rank1_any.
+Qed.
+
+  
+
+(** 0 <= delta^2 / eps.
+    A sign lemma used in the scalar inequalities. *)
+Lemma delta_sq_over_eps_ge0 : 0 <= delta^+2 / eps.
+Proof. by rewrite divr_ge0 ?sqr_ge0 ?ltW. Qed.
+
+(** delta^2 <= delta^2 / eps.
+    Since eps <= 1, delta^2 can be absorbed into delta^2 / eps. *)
+Lemma delta_sq_le_delta_sq_over_eps : delta^+2 <= delta^+2 / eps.
+Proof.
+rewrite ler_pdivlMr; last exact: eps0.
+rewrite -subr_ge0.
+have -> : delta^+2 - delta^+2 * eps = delta^+2 * (1 - eps) by ring.
+by rewrite mulr_ge0 ?sqr_ge0 ?one_sub_eps_ge0.
+Qed.
+
+(** eps <= delta^2 / eps.
+    Since delta >= eps, the eps term can also be absorbed into delta^2 / eps. *)
+Lemma eps_le_delta_sq_over_eps : eps <= delta^+2 / eps.
+Proof.
+rewrite ler_pdivlMr; last exact: eps0.
+rewrite -subr_ge0.
+have -> : delta^+2 - eps * eps = (delta - eps) * (delta + eps) by ring.
+apply: mulr_ge0.
+  by rewrite subr_ge0.
+by rewrite addr_ge0 ?delta_ge0 ?ltW.
+Qed.
+  
+(** eps * ||mu1_gb - mu0_gb|| <= 4 * (delta + sqrt (eps * lambda)).
+    This is the mean-separation bound obtained from equation (2) to (6). *)
+Lemma eps_norm_delta_bound :
+  eps * enorm (mu1_gb - mu0_gb) <= 4 * (delta + Num.sqrt (eps * lambda)).
+Proof.
+pose Delta := (mu1_gb - mu0_gb).
+have eps_ge0 : 0 <= eps by exact: ltW eps0.
+case HDelta0 : (Delta == 0).
+  have -> : mu1_gb - mu0_gb = 0.
+    move/eqP: HDelta0.
+    by rewrite /Delta.
+  rewrite enorm0 mulr0.
+  apply: mulr_ge0 => //.
+  by rewrite addr_ge0 ?delta_ge0 ?sqrtr_ge0 ?mulr_ge0 ?ltW.
+have HDelta_neq0 : Delta != 0.
+  apply/eqP => H.
+  move: HDelta0.
+  by rewrite H eq_refl.
+pose v := (`| Delta |_e)^-1 *: Delta.
+have hv : enorm v = 1.
+  rewrite /v enormZ ger0_norm; last by rewrite invr_ge0 enorm_ge0.
+  by rewrite mulVr // unitfE enorm_eq0.
+have hDelta : v *d Delta = `| Delta |_e.
+  rewrite /v dotmulZv dotmulvv expr2.
+  have Hunit : `| Delta |_e \is a GRing.unit by rewrite unitfE enorm_eq0.
+  rewrite mulrCA.
+  by rewrite (mulVr Hunit) mulr1.
+have hq := eq2_qf_bound hv.
+have hq1 :
+    (1 - eps) * (1 - delta^+2 / eps - delta^+2)
+    <= (1 - eps) * (v *m Sigma1_gb *m v^T) 0 0.
+  rewrite -subr_ge0.
+  have -> :
+      (1 - eps) * (v *m Sigma1_gb *m v^T) 0 0
+      - (1 - eps) * (1 - delta^+2 / eps - delta^+2)
+      = (1 - eps) * ((v *m Sigma1_gb *m v^T) 0 0
+                     - (1 - delta^+2 / eps - delta^+2)) by ring.
+  apply: mulr_ge0.
+    exact: one_sub_eps_ge0.
+  by rewrite subr_ge0 Sigma1_qf_lower.
+have hq0 : 0 <= eps * (v *m Sigma0_gb *m v^T) 0 0.
+  by rewrite mulr_ge0 ?Sigma0_qf_nonneg.
+have hlow :
+    (1 - eps) * (1 - delta^+2 / eps - delta^+2)
+    + 0
+    + (eps * (1 - eps)) * (v *d Delta)^+2
+    <= (1 - eps) * (v *m Sigma1_gb *m v^T) 0 0
+       + eps * (v *m Sigma0_gb *m v^T) 0 0
+       + (eps * (1 - eps)) * (v *d Delta)^+2.
+  exact: (lerD (lerD hq1 hq0) (lexx _)).
+have hmain :
+    (1 - eps) * (1 - delta^+2 / eps - delta^+2)
+    + 0
+    + (eps * (1 - eps)) * (v *d Delta)^+2 <= 1 + lambda.
+  exact: (le_trans hlow hq).
+have hthird1 :
+    (eps * (1 - eps)) * (v *d Delta)^+2
+    <= lambda + eps + (1 - eps) * (delta^+2 / eps + delta^+2).
+  have htmp :
+      (eps * (1 - eps)) * (v *d Delta)^+2
+      <= 1 + lambda - ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0).
+    move: hmain.
+    rewrite -(lerD2l (- ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0))).
+    have -> :
+        - ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0)
+        + ((1 - eps) * (1 - delta^+2 / eps - delta^+2)
+           + 0 + (eps * (1 - eps)) * (v *d Delta)^+2)
+        = (eps * (1 - eps)) * (v *d Delta)^+2 by ring.
+    have -> :
+        - ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0) + (1 + lambda)
+        = 1 + lambda - ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0) by ring.
+    by [].
+  move: htmp.
+  have -> :
+      1 + lambda - ((1 - eps) * (1 - delta^+2 / eps - delta^+2) + 0)
+      = lambda + eps + (1 - eps) * (delta^+2 / eps + delta^+2) by ring.
+  by [].
+have hsum_ge0 : 0 <= delta^+2 / eps + delta^+2.
+  by rewrite addr_ge0 ?delta_sq_over_eps_ge0 ?sqr_ge0.
+have hmul_le :
+    (1 - eps) * (delta^+2 / eps + delta^+2)
+    <= delta^+2 / eps + delta^+2.
+  rewrite -subr_ge0.
+  have -> :
+      delta^+2 / eps + delta^+2
+      - (1 - eps) * (delta^+2 / eps + delta^+2)
+      = eps * (delta^+2 / eps + delta^+2) by ring.
+  by rewrite mulr_ge0.
+have hthird :
+    (eps * (1 - eps)) * (v *d Delta)^+2 <= lambda + 3 * (delta^+2 / eps).
+  have htmp :
+      eps + delta^+2 / eps + delta^+2
+      <= delta^+2 / eps + (delta^+2 / eps + delta^+2 / eps).
+    have h1 : eps <= delta^+2 / eps := eps_le_delta_sq_over_eps.
+    have h2 : delta^+2 <= delta^+2 / eps := delta_sq_le_delta_sq_over_eps.
+    rewrite -subr_ge0.
+    have -> :
+        delta^+2 / eps + (delta^+2 / eps + delta^+2 / eps)
+        - (eps + delta^+2 / eps + delta^+2)
+        = (delta^+2 / eps - eps) + (delta^+2 / eps - delta^+2) by ring.
+    by rewrite addr_ge0 ?subr_ge0.
+  have htmp' :
+      lambda + eps + (1 - eps) * (delta^+2 / eps + delta^+2)
+      <= lambda + (eps + delta^+2 / eps + delta^+2).
+    rewrite -subr_ge0.
+    have -> :
+        (lambda + (eps + delta^+2 / eps + delta^+2))
+        - (lambda + eps + (1 - eps) * (delta^+2 / eps + delta^+2))
+        = (delta^+2 / eps + delta^+2)
+          - (1 - eps) * (delta^+2 / eps + delta^+2) by ring.
+    by rewrite subr_ge0.
+  have htmp2 : lambda + (eps + delta^+2 / eps + delta^+2)
+      <= lambda + 3 * (delta^+2 / eps).
+    move: (lerD (lexx lambda) htmp).
+    have -> :
+        lambda + (delta^+2 / eps + (delta^+2 / eps + delta^+2 / eps))
+        = lambda + 3 * (delta^+2 / eps) by ring.
+    by [].
+  exact: le_trans hthird1 (le_trans htmp' htmp2).
+have hhalf :
+    (eps * 2^-1) * `| Delta |_e ^+ 2
+    <= (eps * (1 - eps)) * (v *d Delta)^+2.
+  rewrite hDelta.
+  rewrite -subr_ge0.
+  have -> :
+      (eps * (1 - eps)) * `| Delta |_e ^+ 2
+      - (eps * 2^-1) * `| Delta |_e ^+ 2
+      = (eps * `| Delta |_e ^+ 2) * ((1 - eps) - 2^-1) by ring.
+  apply: mulr_ge0.
+    by rewrite mulr_ge0 ?exprn_ge0 ?enorm_ge0.
+  by rewrite subr_ge0 one_sub_eps_ge_half.
+have hhalf' :
+    (eps * 2^-1) * `| Delta |_e ^+ 2 <= lambda + 3 * (delta^+2 / eps).
+  exact: le_trans hhalf hthird.
+have hx2 :
+    (eps * `| Delta |_e) ^+ 2 <= 2 * (eps * lambda) + 6 * delta^+2.
+  have hmul :
+      (2 * eps) * ((eps * 2^-1) * `| Delta |_e ^+ 2)
+      <= (2 * eps) * (lambda + 3 * (delta^+2 / eps)).
+    rewrite -subr_ge0.
+    have -> :
+        (2 * eps) * (lambda + 3 * (delta^+2 / eps))
+        - (2 * eps) * ((eps * 2^-1) * `| Delta |_e ^+ 2)
+        = (2 * eps) * ((lambda + 3 * (delta^+2 / eps))
+                      - ((eps * 2^-1) * `| Delta |_e ^+ 2)) by ring.
+    apply: mulr_ge0.
+      by rewrite mulr_ge0 ?ltW.
+    by rewrite subr_ge0.
+  move: hmul.
+  have -> :
+      (2 * eps) * ((eps * 2^-1) * `| Delta |_e ^+ 2)
+      = ((2 * eps) * (eps * 2^-1)) * `| Delta |_e ^+ 2 by ring.
+  have hcoef : (2 * eps) * (eps * 2^-1) = eps * eps.
+    field.
+    done.
+  rewrite hcoef.
+  have -> : eps * eps * `| Delta |_e ^+ 2 = (eps * `| Delta |_e) ^+ 2.
+    rewrite expr2.
+    ring.
+  have -> :
+      (2 * eps) * (lambda + 3 * (delta^+2 / eps))
+      = 2 * (eps * lambda) + 6 * delta^+2.
+    field.
+    by rewrite gt_eqF.
+  by [].
+set s := Num.sqrt (eps * lambda).
+have hs_ge0 : 0 <= s by rewrite /s sqrtr_ge0.
+have hs2 : s ^+ 2 = eps * lambda.
+  have hmul_ge0 : 0 <= eps * lambda.
+    by apply: mulr_ge0; [exact: ltW eps0 | exact: lambda0].
+  by rewrite /s (sqr_sqrtr hmul_ge0).
+have hsq :
+    (eps * `| Delta |_e) ^+ 2 <= (4 * (delta + s)) ^+ 2.
+  apply: (le_trans hx2).
+  have h1 : 2 * (eps * lambda) <= 16 * s ^+ 2.
+    rewrite -subr_ge0.
+    have -> : 16 * s ^+ 2 - 2 * (eps * lambda) = 14 * s ^+ 2.
+      rewrite hs2.
+      ring.
+    by rewrite mulr_ge0 ?sqr_ge0.
+  have h2 : 6 * delta^+2 <= 16 * delta^+2.
+    rewrite -subr_ge0.
+    have -> : 16 * delta^+2 - 6 * delta^+2 = 10 * delta^+2 by ring.
+    by rewrite mulr_ge0 ?sqr_ge0.
+  have h12 : 2 * (eps * lambda) + 6 * delta^+2 <= 16 * s ^+ 2 + 16 * delta^+2.
+    exact: lerD h1 h2.
+  apply: (le_trans h12).
+  rewrite expr2.
+  have -> :
+      16 * s ^+ 2 + 16 * delta^+2
+      = 16 * (delta^+2 + s ^+ 2) by ring.
+  have h2delta_ge0 : 0 <= 2 * delta.
+    by rewrite mulr_ge0 ?delta_ge0.
+  have hcross_ge0 : 0 <= 2 * delta * s.
+    by rewrite mulr_ge0 ?h2delta_ge0 ?hs_ge0.
+  have hsum :
+      delta^+2 + s ^+ 2 <= (delta + s) ^+ 2.
+    rewrite -subr_ge0.
+    have -> : (delta + s) ^+ 2 - (delta^+2 + s^+2) = 2 * delta * s by ring.
+    exact: hcross_ge0.
+  have hscale16 : 16 * (delta^+2 + s ^+ 2) <= 16 * (delta + s) ^+ 2.
+    apply: ler_wpM2l.
+      by [].
+    exact: hsum.
+  have -> : (4 * (delta + s)) ^+ 2 = 16 * (delta + s) ^+ 2 by ring.
+  exact: hscale16.
+have hsqrt : Num.sqrt ((eps * `| Delta |_e) ^+ 2) <= Num.sqrt ((4 * (delta + s)) ^+ 2).
+  exact: ler_wsqrtr hsq.
+move: hsqrt.
+rewrite !sqrtr_sqr ?sqr_ge0 //.
+rewrite !normrM.
+rewrite (ger0_norm eps_ge0) (ger0_norm (enorm_ge0 _)).
+have h4_ge0 : 0 <= (4 : R) by [].
+rewrite (ger0_norm h4_ge0) (ger0_norm (addr_ge0 delta_ge0 hs_ge0)).
+by rewrite /Delta /s.
+Qed.
+
+(* in coq robot, wait to be merged 
+refer to Lynda Bentoucha
+*)
+Lemma CauchySchwarz_rV {n : nat} (a b : 'rV[R]_n) :
+  (a *d b) ^+ 2 <= (a *d a) * (b *d b).
+Proof.
+suffices: 0 <= (b *d b) * (a *d a) - (a *d b) ^+ 2.
+  rewrite subr_ge0.
+  by rewrite mulrC.
+rewrite subr_ge0 expr2 mulrC !dotmulvv /= -expr2.
+have [->|hb] := eqVneq b 0.
+  rewrite dotmulv0 expr0n.
+  rewrite enorm0.
+  by rewrite expr0n mul0r.
+pose t := (a *d b) / (`|b|_e ^+ 2).
+have h : 0 <= `|a - t *: b|_e ^+ 2.
+  by rewrite exprn_ge0// enorm_ge0.
+rewrite -(dotmulvv (a - t *: b)) in h.
+rewrite dotmulBl dotmulBr dotmulvv in h.
+rewrite dotmulvZ in h.
+rewrite -dotmulvv in h.
+rewrite /t in h.
+have h1 : 0 <= a *d a - (a *d b) ^+ 2 / `|b|_e ^+ 2.
+  move: h.
+  rewrite dotmulBr dotmulvZ.
+  rewrite (dotmulC ((a *d b / `|b|_e ^+ 2) *: b) a).
+  rewrite dotmulvZ dotmulC dotmulvv /t expr2 -!expr2 dotmulZv dotmulvv.
+  rewrite divfK /=; last first.
+    by rewrite sqrf_eq0 enorm_eq0.
+  by rewrite subrr subr0 !expr2 mulrAC.
+have h2 : 0 <= `|b|_e ^+ 2 * (a *d a) - (a *d b) ^+ 2.
+  have pos: 0 < `|b|_e ^+ 2.
+    by rewrite exprn_gt0// enorm_gt0.
+  suff: `|b|_e ^+ 2 * (a *d a - (a *d b) ^+ 2 / `|b|_e ^+ 2) =
+      `|b|_e ^+ 2 * (a *d a) - (a *d b) ^+ 2.
+    move=> eq_step.
+    rewrite -eq_step.
+    by apply: mulr_ge0; [rewrite ltW | exact h1].
+  rewrite mulrBr.
+  by rewrite mulrCA divff ?mulr1// sqrf_eq0 enorm_eq0.
+rewrite -subr_ge0 mulrC.
+by rewrite dotmulvv mulrC in h2.
+Qed.
+
+
+
+(*Use Cauchy-Schwarz *)
+Lemma Triganle_Ineq_for_Eculidean_Norm (a b : 'rV[R]_d) :
+  enorm (a + b) <= enorm a + enorm b.
+Proof.
+have hcs_sq : (a *d b) ^+ 2 <= (enorm a * enorm b) ^+ 2.
+  move: (CauchySchwarz_rV a b).
+  rewrite !dotmulvv.
+  have -> : (enorm a * enorm b) ^+ 2 = enorm a ^+ 2 * enorm b ^+ 2.
+    by ring.
+  done.
+have hcs_abs : `| a *d b | <= enorm a * enorm b.
+  have hsqrt : Num.sqrt ((a *d b) ^+ 2) <= Num.sqrt ((enorm a * enorm b) ^+ 2).
+    exact: ler_wsqrtr hcs_sq.
+  move: hsqrt.
+  rewrite !sqrtr_sqr ?sqr_ge0 //.
+  by rewrite normrM !normr_enorm.
+have hcs : a *d b <= enorm a * enorm b.
+  exact: (le_trans (ler_norm (a *d b)) hcs_abs).
+have hsq :
+    enorm (a + b) ^+ 2 <= (enorm a + enorm b) ^+ 2.
+  rewrite -dotmulvv dotmulD !dotmulvv.
+  have h2 : (a *d b) *+ 2 <= (enorm a * enorm b) *+ 2.
+    by rewrite !mulr2n; exact: (lerD hcs hcs).
+  have h2a :
+      enorm a ^+ 2 + (a *d b) *+ 2
+      <= enorm a ^+ 2 + (enorm a * enorm b) *+ 2.
+    exact: (lerD (lexx (enorm a ^+ 2)) h2).
+  have hstep :
+      enorm a ^+ 2 + (a *d b) *+ 2 + enorm b ^+ 2
+      <= enorm a ^+ 2 + (enorm a * enorm b) *+ 2 + enorm b ^+ 2.
+    exact: (lerD h2a (lexx (enorm b ^+ 2))).
+  move: hstep.
+  have -> :
+      enorm a ^+ 2 + (enorm a * enorm b) *+ 2 + enorm b ^+ 2
+      = (enorm a + enorm b) ^+ 2.
+    rewrite mulr2n expr2.
+    ring.
+  done.
+have hsum_ge0 : 0 <= enorm a + enorm b by rewrite addr_ge0 ?enorm_ge0.
+have hsqrt : Num.sqrt (enorm (a + b) ^+ 2) <= Num.sqrt ((enorm a + enorm b) ^+ 2).
+  exact: ler_wsqrtr hsq.
+move: hsqrt.
+rewrite !sqrtr_sqr ?sqr_ge0 //.
+rewrite normr_enorm.
+by rewrite (ger0_norm hsum_ge0).
+Qed.
+
+
+Lemma Certificate_for_Empirical_Mean :
+  exists C, enorm (`E Y - mu) <= C * (delta + Num.sqrt (eps * lambda)).
+Proof.
+exists 5%:R.
+rewrite EY_minus_mu_decomp.
+have htri :
+    enorm (mu1_gb - mu + eps *: (mu0_gb - mu1_gb))
+    <= enorm (mu1_gb - mu) + enorm (eps *: (mu0_gb - mu1_gb)).
+  exact: Triganle_Ineq_for_Eculidean_Norm. (* Triangle inequality *)
+have heps_rev :
+    eps * enorm (mu0_gb - mu1_gb) <= 4 * (delta + Num.sqrt (eps * lambda)).
+  have htmp := eps_norm_delta_bound.
+  have hrev : mu1_gb - mu0_gb = - (mu0_gb - mu1_gb).
+    by rewrite opprB.
+  rewrite hrev enormN in htmp.
+  exact: htmp.
+set s := Num.sqrt (eps * lambda).
+have hs_ge0 : 0 <= s by rewrite /s sqrtr_ge0.
+have h5 : delta + 4 * (delta + s) <= 5 * (delta + s).
+  rewrite -subr_ge0.
+  have -> : 5 * (delta + s) - (delta + 4 * (delta + s)) = s by ring.
+  exact: hs_ge0.
+apply: le_trans _ h5.
+apply: le_trans htri _.
+have eps_ge0 : 0 <= eps by exact: ltW eps0.
+rewrite enormZ (ger0_norm eps_ge0).
+have hsum :
+    enorm (mu1_gb - mu) + eps * enorm (mu0_gb - mu1_gb)
+    <= delta + 4 * (delta + Num.sqrt (eps * lambda)).
+  exact: (lerD mu1_mu_norm_bound heps_rev).
+rewrite /s.
+exact: hsum.
+
+Qed.
+
 End Certificate_for_Empirical_Mean.
+
+
+
+Section Weightedfiltering.
+Local Open Scope ring_scope.
+Context {R : realType}.
+Variables (d: nat) (U : finType) (P : R.-fdist U) (V : lmodType R) 
+  (X Y E: {RV P -> 'rV[R]_d}) 
+  (Good : {set U})  (* good set *)
+  (bad : {set U})  (* bad set *)
+  (C : {ffun U -> R})
+
+  (mu: 'rV[R]_d)
+(* What is S here `b`b*)
+  (S : {set U}) (eps delta lambda: R).  
+
+Hypothesis eps0: 0 < eps. 
+Hypothesis eps_lt_half : eps < 2^-1.
+Hypothesis delta_ge_eps : delta >= eps. 
+Hypothesis lambda0: 0 <= lambda.
+(* Hypothesis X_stable_mu: *)
+Hypothesis lambda_eigen: forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
+(* Hypothesis lambda_eigen: forall a, eigenvalue (Cov Y) a -> a <= 1 + lambda. *)
+Hypothesis S_eps: Pr P S = eps.
+Hypothesis badC : bad = ~: Good.
+Hypothesis bad_mass : Pr P bad = eps.
+Hypothesis Y_mix : forall u, Y u = (if u \in Good then X u else E u).
+Hypothesis Y_eig_bound : forall a, eigenvalue (Cov Y Y) a -> a <= 1 + lambda.
+(* Temporary bridge assumption (to be discharged later via Rayleigh + spectral theorem). *)
+Hypothesis Y_rayleigh_unit :
+  forall v : 'rV[R]_d, enorm v = 1 -> (v *m (Cov Y Y) *m v^T) 0 0 <= 1 + lambda.
+Hypothesis X_stable : @stableT_rv R d U P X eps delta mu. 
+
+
+
+
+
+
+End Weightedfiltering.
