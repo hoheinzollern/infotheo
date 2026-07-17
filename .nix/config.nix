@@ -34,7 +34,8 @@
   ## /!\ Remove this field as soon as the package is available on nixpkgs.
   ## /!\ Manual overlays in `.nix/rocq-overlays` or `.nix/coq-overlays`
   ##     should be preferred then.
-  # buildInputs = [ ];
+  ## robot-rocq comes from the overlay in `.nix/coq-overlays/robot-rocq`
+  buildInputs = [ "robot-rocq" ];
 
   ## Indicate the relative location of your _CoqProject
   ## If not specified, it defaults to "_CoqProject"
@@ -121,6 +122,21 @@
           micromega-plugin.override.version = "master";
           micromega-plugin.job = false;
       };
+      ## robot-rocq only exists as a coqPackages overlay
+      ## (`.nix/coq-overlays/robot-rocq`), so keep it out of common-bundle:
+      ## on the rocqPackages side the toolbox would fabricate a bogus package
+      ## for it, which shadows the real one during dependency resolution
+      common-coq-bundle = common-bundle // {
+          robot-rocq.override.version = "master";
+          robot-rocq.job = false;
+          ## needed by robot-rocq; nixpkgs marks these broken for mathcomp dev
+          mathcomp-real-closed.override.version = "master";
+          mathcomp-real-closed.job = false;
+          mathcomp-algebra-tactics.override.version = "master";
+          mathcomp-algebra-tactics.job = false;
+          mathcomp-zify.override.version = "master";
+          mathcomp-zify.job = false;
+      };
     in {
       "9.0" = {
         rocqPackages = common-bundle // {
@@ -131,7 +147,7 @@
           rocq-elpi.override.version = "master";
 	  rocq-elpi.job = false;
         } ;
-        coqPackages = common-bundle // {
+        coqPackages = common-coq-bundle // {
           coq.override.version = "9.0";
           coq.job = false;
           stdlib.override.version = "9.0";
@@ -150,7 +166,7 @@
           rocq-elpi.override.version = "master";
 	  rocq-elpi.job = false;
         } ;
-        coqPackages = common-bundle // {
+        coqPackages = common-coq-bundle // {
           coq.override.version = "9.1";
           coq.job = false;
           stdlib.override.version = "9.1";
