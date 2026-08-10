@@ -3,7 +3,7 @@
 From HB Require Import structures.
 From mathcomp Require Import all_boot all_order ssralg ssrnum.
 From Stdlib Require Reals.
-From mathcomp Require Import lra.
+From mathcomp.algebra_tactics Require Import lra.
 From mathcomp Require Import Rstruct.
 
 Import Order.POrderTheory GRing.Theory Num.Theory.

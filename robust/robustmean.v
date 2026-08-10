@@ -1,7 +1,7 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot all_order all_algebra.
-From mathcomp Require Import lra ring.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require boolp.
 From mathcomp Require Import mathcomp_extra reals.
 From infotheo Require Import ssr_ext ssralg_ext bigop_ext.
@@ -650,7 +650,8 @@ have Exbad_bound : 0 < Pr P (bad :\: drop) ->
   rewrite /Ex -big_split /= [X in `|X / _|](_ : _ =
       \sum_(i in U) (X i - mu) * @Ind _ U (bad :\: drop) i * P i); last first.
     apply: eq_bigr => u _; rewrite -!mulr_regl.
-    by rewrite mulrCA -mulrDl mulrAC mulrA.
+    have -> : (X * Ind (bad :\: drop)) u = X u * Ind (bad :\: drop) u by [].
+    by ring.
   rewrite normrM (@ger0_norm _ _^-1); last by rewrite ltW // invr_gt0.
   rewrite ler_pdivrMr //; apply: (le_trans (ler_norm_sum _ _ _)).
   rewrite (bigID [pred i | i \in bad :\: drop]) /=.

@@ -931,17 +931,9 @@ Let f0 (i : 'I_n) : 0 <= f i. Proof. by rewrite ffunE. Qed.
 
 Let f1 : \sum_(i < n) f i = 1.
 Proof.
-transitivity (\sum_(i <- [tuple (s^-1)%g i | i < n]) f i).
-  apply/perm_big/tuple_permP; exists s.
-  destruct n; first by move: (fdistI0_False P).
-  rewrite /index_enum -enumT; apply/(@eq_from_nth _ ord0).
-    by rewrite size_map size_tuple -enumT size_enum_ord.
-  move=> i; rewrite size_enum_ord => ni /=.
-  rewrite (nth_map ord0) ?size_enum_ord //= tnth_map /=.
-  apply: (@perm_inj _ s); by rewrite permKV /= tnth_ord_tuple.
-rewrite -(FDist.f1 P) /= big_map; apply: congr_big => //.
-  by rewrite /index_enum -enumT.
-by move=> i _; rewrite /f ffunE permKV.
+under eq_bigr do rewrite /f ffunE.
+rewrite -[RHS](FDist.f1 P).
+exact/esym/(reindex_perm s).
 Qed.
 
 Definition fdistI_perm : R.-fdist 'I_n := locked (FDist.make f0 f1).

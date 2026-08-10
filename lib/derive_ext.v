@@ -1,7 +1,7 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot all_order ssralg ssrnum interval.
-From mathcomp Require Import ring lra.
+From mathcomp.algebra_tactics Require Import ring lra.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable. (* imported for inv_fun *)
 From mathcomp Require Import mathcomp_extra boolp classical_sets.

@@ -1,6 +1,7 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot ssralg poly polydiv matrix.
+From mathcomp.algebra_tactics Require Import ring.
 From Stdlib Require Bool.
 
 (**md**************************************************************************)
@@ -127,7 +128,7 @@ transitivity ((- q k.+2 * v k.+1) * u k.+1 + v k * u k.+1 +
   by rewrite mulNr mulrN opprK.
 rewrite exprS -IH [in RHS]mulNr mul1r opprD opprK [in RHS]addrC; congr (_ - _).
 rewrite addrC addrA -[RHS]add0r; congr (_ + _).
-by rewrite mulrC -mulrA (mulrC (v k.+1)) mulrA 2!mulNr subrr.
+by ring.
 Qed.
 
 (* McEliece, p.245, table 9.2, relation D *)
@@ -139,8 +140,8 @@ elim/pair_ind: i => [||k [Hk1 Hk]].
 rewrite /v uvE.
 transitivity (- q k.+2 * (u k.+1 * r 0 + v k.+1 * r 1) + (u k * r 0 + v k * r 1)).
   by rewrite -Hk -Hk1 (rE k) addrA addrC [in X in _ + X]addrC mulNr subrr addr0.
-rewrite mulrDl mulrDr mulrA -2!addrA; congr (_ + _).
-rewrite mulrDl [in RHS]addrC mulrA -addrA; congr (_ + _); by rewrite addrC.
+rewrite /u /v uvE.
+by ring.
 Qed.
 
 Lemma ltn_size_r i : 1 <= i -> r i != 0 -> size (r i.+1) < size (r i).

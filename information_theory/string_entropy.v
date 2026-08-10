@@ -113,6 +113,7 @@ apply: eq_bigr => a _ /=; rewrite ffunE.
 case: ifPn => [/eqP -> | Hnum]; first by rewrite !mul0r oppr0 mulr0.
 rewrite (mulrC N(a | s)%:R) mulrN 3![in LHS]mulrA mulrV ?unitfE ?pnatr_eq0 //.
 rewrite mul1r -mulrA -mulrN -logV 1?mulrC ?invf_div //.
+  by rewrite invfM invrK mulrC.
 by apply: divr_gt0; rewrite ltr0n lt0n.
 Qed.
 

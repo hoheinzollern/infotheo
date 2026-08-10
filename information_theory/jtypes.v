@@ -897,15 +897,18 @@ have -> : mask (map (pred1 a) dom) cdom = flatten [seq nseq (JType.f V a b) b | 
     have /splitPr[A1 A2] : a \in enum A by rewrite mem_enum.
     by exists A1, A2.
   rewrite /cdom /dom A12 map_cat flatten_cat map_cat.
-  rewrite [in X in mask _ X]map_cat flatten_cat mask_cat; last first.
+  rewrite map_cat flatten_cat.
+  rewrite (mask_cat (m1 := [seq pred1 a i | i <- flatten [seq nseq N(x0 | ta) x0 | x0 <- A1]])); last first.
     rewrite size_map size_flatten /shape -map_comp sumn_big_addn big_map.
     rewrite size_flatten /shape -map_comp sumn_big_addn big_map.
     apply: eq_bigr => i _ /=; by rewrite sz_flat size_nseq.
   rewrite (_ : _ :: _ = [:: a] ++ A2) //.
   rewrite map_cat.
   rewrite [in X in _ ++ mask _ X = _]map_cat flatten_cat.
-  rewrite mask_cat; last first.
-    by rewrite size_map /= cats0 sz_flat size_nseq.
+  rewrite [in X in _ ++ mask X _ = _]map_cat.
+  rewrite [in X in _ ++ mask _ X = _]flatten_cat.
+  rewrite (mask_cat (m1 := [seq pred1 a i | i <- flatten [seq nseq N(x0 | ta) x0 | x0 <- [:: a]]])); last first.
+    by rewrite size_map /= !cats0 sz_flat size_nseq.
   transitivity (mask (map (pred1 a) (flatten [seq nseq N(a1 | ta) a1 | a1 <- [:: a]]))
      (flatten [seq flatten [seq nseq (JType.f V a1 b1) b1 | b1 <- enum B] | a1 <- [:: a]])).
     move: (enum_uniq A); rewrite A12 cat_uniq /= negb_or /=.

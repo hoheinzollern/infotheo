@@ -90,7 +90,7 @@ Lemma max_wH' u : (wH u < n.+1)%N. Proof. by rewrite ltnS max_wH. Qed.
 Lemma wH_sum v : wH v = (\sum_(n0 < n) (v ``_ n0 != 0%R))%nat.
 Proof.
 rewrite /wH 1!count_map -sum1_count /= big_mkcond /=.
-apply: congr_big => //=; by rewrite /index_enum -enumT.
+apply: congr_big => //=; by rewrite /index_enum [locked_with index_enum_key _]unlock -enumT.
 Qed.
 
 Lemma wH_const_mx b : b != 0 -> wH (const_mx b) = n.
@@ -177,7 +177,7 @@ Lemma wH_count n (x : 'rV['F_2]_n) : wH x = count (fun i => x ``_ i == 1) (enum 
 Proof.
 rewrite wH_sum -sum1_count [in RHS]big_mkcond /=.
 apply: congr_big => //.
-- by rewrite /index_enum -enumT.
+- by rewrite /index_enum [locked_with index_enum_key _]unlock -enumT.
 - move=> i _; case: ifPn => [/eqP -> //|].
   by rewrite -F2_eq0 => /eqP ->.
 Qed.

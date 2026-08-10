@@ -6,7 +6,7 @@ From mathcomp Require Import reals normedtype sequences exp.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable. (* imported for onem *)
 From mathcomp Require Import mathcomp_extra boolp interval_inference.
-From mathcomp Require Import ring lra.
+From mathcomp.algebra_tactics Require Import ring lra.
 
 (**md**************************************************************************)
 (* # Additional definitions and lemmas about numeric types                    *)

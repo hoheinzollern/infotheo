@@ -1,7 +1,8 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot all_order ssralg ssrnum ssrint matrix.
-From mathcomp Require Import archimedean lra ring.
+From mathcomp Require Import archimedean.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require Import reals exp.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln.
 Require Import fdist proba entropy aep typ_seq natbin source_code.
@@ -360,9 +361,9 @@ apply: (@le_lt_trans _ _  (n'.+1%:R * (`H P + epsilon') + 1 + 1 +
   rewrite mulrDl addrA lerD//; last first.
     rewrite -mulrA.
     rewrite (mulrC _^-1).
-    rewrite ltW//.
-    rewrite (le_lt_trans _ n0_eps3)//.
-    by rewrite mulrDr mulr1 -mulrA.
+    apply: ltW.
+    rewrite (_ : 3 + 3 * log #|X|%:R = 3 * (1 + log #|X|%:R)); last by rewrite mulrDr mulr1.
+    rewrite mulrA; exact: n0_eps3.
   rewrite -/epsilon'.
   rewrite /epsilon'.
   rewrite (mulrCA _ epsilon).

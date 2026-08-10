@@ -1,7 +1,8 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot ssralg ssrnum finalg zmodp.
-From mathcomp Require Import matrix lra ring.
+From mathcomp Require Import matrix.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require Import Rstruct reals.
 Require Import ssr_ext ssralg_ext f2 summary.
 Require Import subgraph_partition tanner tanner_partition fdist channel.
@@ -585,15 +586,16 @@ rewrite dprojs_in; last first.
   apply/existsP; exists m1'; by rewrite Hm1'.
 rewrite /ssgraph Hn1' /=.
 case/andP: Hm1' => Hm1'.
-rewrite 3!inE; case/orP => [/eqP ?|].
+rewrite in_setU1; case/orP => [/eqP ?|].
   subst n1'.
   move=> abs.
-  rewrite inE in abs.
+  rewrite in_set in abs.
   exfalso.
   move/negP : tmp; apply.
-  case/existsP : abs => m1 /andP[abs _].
-  apply/existsP; by exists m1.
-rewrite inE.
+  case: (existsP abs) => m1 Hm1x.
+  apply/existsP; exists m1.
+  by case: (m1 \in `F n1 :\ m0) Hm1x.
+rewrite in_set /subgraph in_set.
 case/andP => n1'm1' /connectP [] /= p.
 case/shortenP => p' Hp' Hun p'p Hlast.
 exfalso.

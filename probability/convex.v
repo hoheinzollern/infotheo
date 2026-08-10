@@ -7,7 +7,8 @@ From mathcomp Require Import unstable. (* imported for onem *)
 From mathcomp Require Import mathcomp_extra boolp classical_sets.
 From mathcomp Require Import ssrnum archimedean ereal interval_inference.
 From mathcomp Require Import realfun.
-From mathcomp Require Import ring lra reals.
+From mathcomp Require Import reals.
+From mathcomp.algebra_tactics Require Import ring lra.
 Require Import ssr_ext ssralg_ext realType_ext realType_ln fdist.
 From mathcomp Require vector.
 From mathcomp.analysis Require Import (canonicals)convex.
@@ -901,7 +902,7 @@ rewrite /=; case: Bool.bool_dec => [/eqP|/Bool.eq_true_not_negb]Hd.
   by rewrite mem_index_enum Hi implyTb => /(_ isT)/eqP ->; rewrite scale0pt.
 set d' := fdist_del Hd.
 set g' := fun i => g (fdist_del_idx ord0 i).
-rewrite /index_enum -enumT (bigD1_seq ord0) ?enum_uniq ?mem_enum //=.
+rewrite /index_enum [locked_with index_enum_key _]unlock -enumT (bigD1_seq ord0) ?enum_uniq ?mem_enum //=.
 rewrite -big_filter (perm_big (map (lift ord0) (enum 'I_n))); last first.
   exact: perm_filter_enum_ord.
 rewrite 2!affine_conv/=; congr addpt.
@@ -2972,7 +2973,7 @@ Lemma concave_function_atN f x y t : concave_function_at f x y t ->
 Proof.
 move=> H k k0; rewrite /concave_function_at /convex_function_at.
 rewrite leEdual avgRE.
-rewrite /= -avgR_mulDl.
+rewrite /= -[leLHS]avgRE -avgR_mulDl.
 exact: ler_wpM2r.
 Qed.
 

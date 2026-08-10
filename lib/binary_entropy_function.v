@@ -1,6 +1,7 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
-From mathcomp Require Import all_boot all_order all_algebra lra.
+From mathcomp Require Import all_boot all_order all_algebra.
+From mathcomp.algebra_tactics Require Import lra.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable. (* imported for onem *)
 From mathcomp Require Import mathcomp_extra classical_sets reals.

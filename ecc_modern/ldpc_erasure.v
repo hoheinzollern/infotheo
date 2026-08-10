@@ -658,7 +658,7 @@ case/orP : (letter_split b) Hpa' => [/existsP[b' /eqP -> Hpa']|].
       by rewrite !mxE.
     apply/hasP; exists (Bit b') => //.
     move/Prod_Bit: Hpa'.
-    rewrite in_cons => /orP [|].
+    rewrite /colFnextD1 /ColFnext in_cons => /orP [|].
       by rewrite in_cons => ->.
     move/mapP=> [k Hk Hk'].
     move/'forall_forallP/(_ k n0): AB.

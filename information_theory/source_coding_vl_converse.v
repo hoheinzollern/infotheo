@@ -1,7 +1,8 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot all_order ssralg ssrnum ssrint matrix.
-From mathcomp Require Import archimedean lra ring.
+From mathcomp Require Import archimedean.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require Import mathcomp_extra.
 From mathcomp Require Import contra reals normedtype sequences exp.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln.
@@ -535,9 +536,7 @@ rewrite ffunE.
 rewrite [in RHS]mulrC -mulrA -mulrA.
 have [->|Pfi0_non0] := eqVneq (Pf i0) 0; first by rewrite !mul0r.
 congr *%R.
-rewrite -mulrA.
-rewrite mulrC.
-rewrite -mulrA.
+rewrite mulrCA [in X in _ = _ * X]mulrC.
 rewrite {2}/PN.
 rewrite [in X in _ = _ * (_ / X)]/= [in X in _ = _ * (_ / X)]ffunE.
 rewrite mulfV ?mulr1; last by rewrite /PN /= ffunE in Pr_non0.

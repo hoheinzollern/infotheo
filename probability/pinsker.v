@@ -1,6 +1,7 @@
 (* infotheo: information theory and error-correcting codes in Rocq            *)
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
-From mathcomp Require Import all_boot all_order ssralg ssrnum interval ring lra.
+From mathcomp Require Import all_boot all_order ssralg ssrnum interval.
+From mathcomp.algebra_tactics Require Import ring lra.
 From mathcomp Require Import interval_inference.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable. (* imported for onem *)
@@ -396,8 +397,8 @@ transitivity (D(P || Q) - c * (`| p%:num - q%:num | + `| (1 - p%:num) - (1 - q%:
   set tmp := (`| _ | + _) ^+ 2.
   have -> : tmp = 4 * (p%:num - q%:num) ^+ 2.
     rewrite /tmp (_ : 1 - p%:num - (1 - q%:num) = q%:num - p%:num); last by simpl; ring.
-    rewrite sqrrD (distrC q%:num p%:num) -{3}(expr1 `|p%:num - q%:num|).
-    by rewrite -exprS real_normK ?num_real//; ring.
+    rewrite (distrC q%:num) -mulr2n -mulr_natr exprMn real_normK ?num_real//.
+    by ring.
   rewrite [X in _ = _ + _ - X]mulrA.
   rewrite [in X in _ = _ + _ - X](mulrC c).
   congr (_ - _).

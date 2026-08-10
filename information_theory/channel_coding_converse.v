@@ -127,8 +127,7 @@ rewrite -[in X in X -> _](@ltr_pM2l _ epsilon)// mulr1.
 apply: le_lt_trans.
 rewrite /n0.
 rewrite [in X in _ <= X]mulrC.
-rewrite -6![in X in _ <= X]mulrA.
-rewrite mulVf ?gt_eqF// mulr1.
+rewrite -(mulrA (n%:R^-1)) -(mulrA _ _ epsilon) mulVf ?gt_eqF// mulr1.
 rewrite [leRHS]mulrC.
 rewrite -2!mulrA.
 set aux := _%:R * (_ * _).

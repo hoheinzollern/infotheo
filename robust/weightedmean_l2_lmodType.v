@@ -1,6 +1,6 @@
 From mathcomp Require Rstruct.  (* Remove this line when requiring Rocq >= 9.2 *)
 From mathcomp Require Import all_ssreflect ssralg ssrnum matrix.
-From mathcomp Require Import lra ring.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require boolp.
 From mathcomp Require Import normedtype.
 From mathcomp Require Import Rstruct reals mathcomp_extra.
@@ -314,10 +314,9 @@ Proof.
 rewrite mat_rv_sub_mul_mix_bl mat_rv_sub_mul_mix_br mat_rv_sub_mul_mix_br.
 rewrite -!addrA.        (* Distribute Right again *)
 congr(_ + _).
-rewrite opprB addrCA.
-congr(_ + _).
-rewrite addrC.
-by [].
+rewrite [in RHS]addrCA.
+congr (_ + _).
+by rewrite opprB addrC.
 Qed.
 
 
@@ -518,7 +517,7 @@ Proof.
       move/eqP : PF0; rewrite /Pr psumr_eq0 ?FDist.ge0 // => /allP hPF.
       have := hPF u (mem_index_enum u).
       by rewrite HuF implyTb => /eqP.
-    rewrite big1; last first.
+    rewrite big1.
       move=> u _.
       case HuF: (u \in F).
       + rewrite /Ind HuF /=.
@@ -665,7 +664,7 @@ Proof.
     rewrite [LHS]big_mkcond /=.
     by apply: eq_bigr => a _; rewrite inE.
   rewrite hsetTA.
-  rewrite (eq_bigr (fun a => (Pr P (Fz a)) *: cEx_Ind_vec (Fz a) Y)); last first.
+  rewrite (eq_bigr (fun a => (Pr P (Fz a)) *: cEx_Ind_vec (Fz a) Y)).
     move=> a _; rewrite /Pr.
     have hFzE u a0 : (u \in Fz a0) = (Z u == a0).
       by rewrite inE.
@@ -792,7 +791,7 @@ Proof.
         (Y^TT *M Y
           - (mu_given_Z a)^T *M Y
           - Y^TT *M (mu_given_Z a)
-          + (mu_given_Z a)^T *M (mu_given_Z a))))) ; last first.
+          + (mu_given_Z a)^T *M (mu_given_Z a))))).
     move=> a _.
     rewrite mat_opp_mix_transpose.
     by rewrite -expand_transpose_sub_mul_mix.
@@ -1222,7 +1221,7 @@ have denw_gt0 : 0 < (w *m w^T) 0 0 by rewrite -den_eq.
   exact: (ler_wpM2r wi2_ge0 (sp_le i)).
 
 rewrite /RQ /= num_eq den_eq.
-rewrite ler_pdivrMr; last exact: denw_gt0.
+rewrite ler_pdivrMr; first exact: denw_gt0.
 exact: num_le.
 Qed.
 
@@ -1377,12 +1376,12 @@ Let mu0_gb : 'rV[R]_d := cEx_Ind_vec bad Ygb.
 Lemma one_sub_eps_ge_half : 2^-1 <= 1 - eps.
 Proof.
 rewrite (_ : 2^-1 = 1 - 2^-1).
+  rewrite {2} (splitr 1).
+  rewrite div1r.
+  rewrite addrK. 
+  exact.
 rewrite lerB //. 
 rewrite ltW //.
-rewrite {2} (splitr 1).
-rewrite div1r.
-rewrite addrK. 
-exact.
 Qed.
 
 
@@ -1800,7 +1799,7 @@ have Hw0 : w != 0.
   by rewrite Hw1 eq_refl.
 pose v := (`| w |_e)^-1 *: w.
 have hv : enorm v = 1.
-  rewrite /v enormZ ger0_norm; last by rewrite invr_ge0 enorm_ge0.
+  rewrite /v enormZ ger0_norm; first by rewrite invr_ge0 enorm_ge0.
   by rewrite mulVr // unitfE enorm_eq0.
 have hproj := stable_good_mean_proj hv.
 have hw : v *d w = `| w |_e.
@@ -1852,15 +1851,15 @@ have -> :
 rewrite !big_split /=.
 have hcross :
     \sum_(u in U) (Q u * (2 * c * (v *d (X u - mu1_gb)))) = 0.
-  rewrite (eq_bigr (fun u => (2 * c) * (Q u * (v *d (X u - mu1_gb))))) => [|u _].
-    rewrite -mulr_sumr.
-    have -> :
-        \sum_(u in U) (Q u * (v *d (X u - mu1_gb))) =
-        Ex Q (fun u => (v *d (X u - mu1_gb)) : R^o).
-      by rewrite /Ex.
-    rewrite Ex_good_dot_center_mu1.
-    by rewrite mulr0.
-  by rewrite mulrCA.
+  rewrite (eq_bigr (fun u => (2 * c) * (Q u * (v *d (X u - mu1_gb))))) => [u _|].
+    by rewrite mulrCA.
+  rewrite -mulr_sumr.
+  have -> :
+      \sum_(u in U) (Q u * (v *d (X u - mu1_gb))) =
+      Ex Q (fun u => (v *d (X u - mu1_gb)) : R^o).
+    by rewrite /Ex.
+  rewrite Ex_good_dot_center_mu1.
+  by rewrite mulr0.
 have hconst : \sum_(u in U) (Q u * c^+2) = c^+2.
   by rewrite -mulr_suml FDist.f1 mul1r.
 rewrite hcross hconst add0r.
@@ -2002,7 +2001,7 @@ Proof. by rewrite divr_ge0 ?sqr_ge0 ?ltW. Qed.
     Since eps <= 1, delta^2 can be absorbed into delta^2 / eps. *)
 Lemma delta_sq_le_delta_sq_over_eps : delta^+2 <= delta^+2 / eps.
 Proof.
-rewrite ler_pdivlMr; last exact: eps0.
+rewrite ler_pdivlMr; first exact: eps0.
 rewrite -subr_ge0.
 have -> : delta^+2 - delta^+2 * eps = delta^+2 * (1 - eps) by ring.
 by rewrite mulr_ge0 ?sqr_ge0 ?one_sub_eps_ge0.
@@ -2012,7 +2011,7 @@ Qed.
     Since delta >= eps, the eps term can also be absorbed into delta^2 / eps. *)
 Lemma eps_le_delta_sq_over_eps : eps <= delta^+2 / eps.
 Proof.
-rewrite ler_pdivlMr; last exact: eps0.
+rewrite ler_pdivlMr; first exact: eps0.
 rewrite -subr_ge0.
 have -> : delta^+2 - eps * eps = (delta - eps) * (delta + eps) by ring.
 apply: mulr_ge0.
@@ -2040,7 +2039,7 @@ have HDelta_neq0 : Delta != 0.
   by rewrite H eq_refl.
 pose v := (`| Delta |_e)^-1 *: Delta.
 have hv : enorm v = 1.
-  rewrite /v enormZ ger0_norm; last by rewrite invr_ge0 enorm_ge0.
+  rewrite /v enormZ ger0_norm; first by rewrite invr_ge0 enorm_ge0.
   by rewrite mulVr // unitfE enorm_eq0.
 have hDelta : v *d Delta = `| Delta |_e.
   rewrite /v dotmulZv dotmulvv expr2.
@@ -2264,7 +2263,7 @@ have h1 : 0 <= a *d a - (a *d b) ^+ 2 / `|b|_e ^+ 2.
   rewrite dotmulBr dotmulvZ.
   rewrite (dotmulC ((a *d b / `|b|_e ^+ 2) *: b) a).
   rewrite dotmulvZ dotmulC dotmulvv /t expr2 -!expr2 dotmulZv dotmulvv.
-  rewrite divfK /=; last first.
+  rewrite divfK /=.
     by rewrite sqrf_eq0 enorm_eq0.
   by rewrite subrr subr0 !expr2 mulrAC.
 have h2 : 0 <= `|b|_e ^+ 2 * (a *d a) - (a *d b) ^+ 2.

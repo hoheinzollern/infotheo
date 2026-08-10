@@ -655,8 +655,8 @@ apply/connectP; exists p' => //.
 apply: sub_path_except H3 => //.
 apply/negP => n1p'.
 move: Hun.
-rewrite -(cat1s (inl m0)) -(cat1s (inr n1)) -(cat1s (inl p2)) catA uniq_catCA.
-by rewrite catA uniq_catC -!catA catA cat_uniq uniq_catC /= n1p'.
+rewrite /= => /and4P[_ + _ _].
+by rewrite inE n1p' orbT.
 Qed.
 
 Lemma trivIset_Fgraph_part_Fgraph m0 n0 : n0 \in 'V m0 ->
@@ -1007,8 +1007,8 @@ apply/connectP; exists p'; last by [].
 apply: sub_path_except H3 => //.
 apply/negP => n2p'.
 move: Hun.
-rewrite -(cat1s (inl m0)) -(cat1s (inr n2)) -(cat1s (inl m1)) catA uniq_catCA.
-by rewrite catA uniq_catC -!catA catA cat_uniq uniq_catC /= n2p'.
+rewrite /= => /and4P[_ + _ _].
+by rewrite inE n2p' orbT.
 Qed.
 
 Lemma trivIset_Vgraph_part_Vgraph m0 n0 : n0 \in 'V m0 ->

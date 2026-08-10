@@ -4326,19 +4326,22 @@ case => //= [|s2].
 case => //= [|s3 s] _.
   case: s1 => [] [] s1 [] //=;
   case: s2 => [] [] s2 [] //=; by rewrite !andbF.
+have edom0 : edom (start_graph i) = set0.
+  rewrite /edom /start_graph /= /graph_dom /ports /=.
+  apply/setP => x; rewrite !inE.
+  have -> : \bigcup_(x0 in [set i]) x0 = i by apply: big_pred1 => x0; rewrite inE.
+  by rewrite andNb.
 case: s1 => [] [] s1 [] //=;
 case: s2 => [] [] s2 [] //=; try by rewrite !andbF.
-- rewrite inE /= /ports big_set1.
-  by case: (s1 \in i).
+- by rewrite edom0 in_set0.
 - case: existsP => //= [] [j].
   rewrite inE => /and4P[/eqP -> {j} H1 H2 H3].
-  case: s3 => [] [] s3 [] //=; try by rewrite !andbF.
-  rewrite inE /= /ports big_set1.
-  by case: (s2 \in i).
-- rewrite inE /= /ports big_set1.
-  by case: (s2 \in i).
-- case: existsP => //= [] [j].
-  by rewrite inE.
+  case: s3 => [[x'|y'] [|]] //=.
+  by rewrite edom0 in_set0.
+- by rewrite edom0 in_set0.
+- have -> : ([exists s0 : {set port}, [&& s0 \in set0, s1 \in s0, s2 \in s0 & s1 != s2]]) = false.
+    by apply/negbTE/negP => /existsP[s0 /and4P[+ _ _ _]]; rewrite inE.
+  by [].
 Qed.
 
 Hypothesis Hlam : (size lam <= maxdeg)%nat.

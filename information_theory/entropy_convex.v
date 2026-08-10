@@ -2,7 +2,7 @@
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From HB Require Import structures.
 From mathcomp Require Import all_boot all_order ssralg ssrnum matrix interval.
-From mathcomp Require Import ring.
+From mathcomp.algebra_tactics Require Import ring.
 From mathcomp Require boolp.
 #[warning="-warn-library-file-internal-analysis"]
 From mathcomp Require Import unstable. (* imported for onem *)

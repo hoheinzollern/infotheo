@@ -2,7 +2,8 @@
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From mathcomp Require Import all_boot ssralg ssrnum finalg perm.
 From mathcomp Require Import zmodp matrix vector order interval_inference.
-From mathcomp Require Import lra ring mathcomp_extra Rstruct reals.
+From mathcomp Require Import mathcomp_extra Rstruct reals.
+From mathcomp.algebra_tactics Require Import lra ring.
 Require Import realType_ext ssr_ext ssralg_ext f2 bigop_ext fdist proba.
 Require Import channel_code channel binary_symmetric_channel hamming pproba.
 

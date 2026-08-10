@@ -3,7 +3,7 @@
 From Stdlib Require Peano_dec.
 From HB Require Import structures.
 From mathcomp Require Import all_boot all_order all_algebra.
-From mathcomp Require Import lra.
+From mathcomp.algebra_tactics Require Import lra.
 From mathcomp Require boolp.
 From mathcomp Require Import unstable mathcomp_extra functions reals exp.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln fdist.
@@ -2691,12 +2691,12 @@ transitivity (\sum_(a in A) \sum_(j in 'rV[A]_n.+1)
   apply: eq_bigr => a _; apply: eq_bigr => ta _.
   by rewrite row_mx_row_ord0 rbehead_row_mx.
 rewrite (partition_big_undup_map _ X1); last first.
-  by rewrite /index_enum -enumT; apply: enum_uniq.
-rewrite /index_enum -enumT.
+  by rewrite /index_enum [locked_with index_enum_key _]unlock -enumT; apply: enum_uniq.
+rewrite /index_enum [locked_with index_enum_key _]unlock -enumT.
 apply: eq_bigr => /= r _.
 rewrite {1}enumT exchange_big /= (partition_big_undup_map _ X2); last first.
-  by rewrite /index_enum -enumT; apply: enum_uniq.
-rewrite /index_enum -enumT.
+  by rewrite /index_enum ?[locked_with index_enum_key _]unlock -?enumT; apply: enum_uniq.
+rewrite /index_enum ?[locked_with index_enum_key _]unlock -?enumT.
 apply: eq_bigr => /= r' _.
 transitivity (r * r' * \sum_(i0 | X2 i0 == r') \sum_(i1 | X1 i1 == r)
     (P (row_mx (\row_(k < 1) i1) i0))).

@@ -1,5 +1,5 @@
 From mathcomp Require Import all_ssreflect ssralg ssrnum matrix.
-From mathcomp Require Import lra ring.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require boolp.
 From mathcomp Require Import Rstruct reals mathcomp_extra.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln.

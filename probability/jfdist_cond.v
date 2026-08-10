@@ -451,9 +451,7 @@ Proof.
 rewrite /den !fdistE [RHS]big_mkcond /=.
 under eq_bigl do rewrite inE.
 apply/eq_bigr => a _.
-rewrite !fdistE /= (big_pred1 (a,i)) ?fdistE /=;
-    last by case=> x y; rewrite /= !xpair_eqE andbC.
-rewrite eq_sym 2!inE.
+rewrite !fdistE /= inE /= eq_sym.
 by case: eqP => // _; rewrite (mulr0,mulr1).
 Qed.
 

@@ -3,7 +3,8 @@
 From HB Require Import structures.
 From Stdlib Require Import Wf_nat Init.Wf Recdef.
 From mathcomp Require Import all_boot perm zmodp matrix ssralg ssrnum.
-From mathcomp Require Import Rstruct reals ring lra.
+From mathcomp Require Import Rstruct reals.
+From mathcomp.algebra_tactics Require Import ring lra.
 Require Import ssr_ext ssralg_ext bigop_ext f2.
 Require Import fdist channel pproba linearcode subgraph_partition tanner.
 Require Import tanner_partition summary ldpc checksum ldpc_algo.
@@ -1292,11 +1293,11 @@ Proof.
 destruct a, b; rewrite //= => Hij.
 - by rewrite tanner_relE in Hij.
 - rewrite -alpha_def; last by rewrite VnextE sym_tanner_rel.
-  rewrite -imset_set1 (@kind_filter _ kf).
+  rewrite -(imset_set1 inr o0) (@kind_filter _ kf).
   set x := [set x | _].
   suff : 'V o = x by move=> ->.
   by apply/setP => i; rewrite inE /= -VnextE.
-- rewrite -beta_def -imset_set1 (@kind_filter _ kv) /=.
+- rewrite -beta_def -(imset_set1 inl o0) (@kind_filter _ kv) /=.
   congr beta.
   rewrite /image_mem /enum_mem.
   congr map.

@@ -244,7 +244,7 @@ Lemma Pr_DMC_fst (Q : 'rV_n -> bool) :
 Proof.
 rewrite {1}/Pr big_rV_prod /= -(pair_big_fst _ _ [pred x | Q x]) //=; last first.
   move=> t /=.
-  set X := (X in X _ = _); transitivity (prod_rV t \in X) => //; rewrite inE/=.
+  rewrite !inE /=.
   congr (Q _).
   by apply/rowP => a; rewrite !mxE.
 transitivity (\sum_(i | Q i) (P `^ n) i * (\sum_(y in 'rV[B]_n) W ``(y | i))).
@@ -262,7 +262,7 @@ Lemma Pr_DMC_out m (S : {set 'rV_m}) :
 Proof.
 rewrite {1}/Pr big_rV_prod /= -(pair_big_snd _ _ [pred x | x \notin S]) //=; last first.
   move=> tab /=.
-  set X := (X in X _ = _); transitivity (prod_rV tab \in X) => //; rewrite inE/=.
+  rewrite !inE /=.
   do 2 f_equal.
   by apply/rowP => a; rewrite !mxE.
 rewrite /= /Pr /= exchange_big /=; apply: eq_big => tb; first by rewrite !inE.

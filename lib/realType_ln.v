@@ -775,12 +775,9 @@ Qed.
 
 Lemma continuous_at_diff_xlnx (r : R) : continuous_at r diff_xlnx.
 Proof.
-move=> z.
-apply: cvgB => //.
-  apply: cvg_comp; last exact: continuous_at_xlnx.
-  apply: cvgB => //.
-  exact: cvg_cst.
-by apply: continuous_at_xlnx.
+apply: cvgB; last exact: continuous_at_xlnx.
+apply: cvg_comp; last exact: continuous_at_xlnx.
+apply: cvgB; [exact: cvg_cst | exact: cvg_id].
 Qed.
 
 Lemma diff_xlnx_sincreasing_0_Rinv_e2 (x y : R) :

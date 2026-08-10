@@ -2,7 +2,8 @@
 (* Copyright (C) 2025 infotheo authors, license: LGPL-2.1-or-later            *)
 From HB Require Import structures.
 From mathcomp Require Import all_boot all_order ssralg ssrnum ssrint matrix perm.
-From mathcomp Require Import archimedean lra ring.
+From mathcomp Require Import archimedean.
+From mathcomp.algebra_tactics Require Import lra ring.
 From mathcomp Require Import mathcomp_extra boolp classical_sets reals Rstruct.
 From mathcomp Require Import exp.
 Require Import ssr_ext ssralg_ext bigop_ext realType_ext realType_ln.
@@ -590,7 +591,7 @@ transitivity (\sum_(j0 : 'rV[A]_n) \sum_(ji : 'rV[A]_n)
   ((P `^ n)%fdist j0) * ((P `^ n)%fdist ji) * (\sum_( y | y \in
     [set y0 in 'rV[B]_n | prod_rV (ji , y0) \in `JTS P W n epsilon0])
   (W ``(| j0)) y)).
-  set lhs := (\sum_(_ <- _) _).
+  set lhs := (X in X * _ = _).
   suff : lhs = 1 by move=> ->; rewrite mul1r.
   rewrite /lhs {lhs}.
   rewrite (@big_cat_tuple_seq _ i.-1 (#|M| - i.+1) (fun x => \prod_(i0 <- x) (P `^ n)%fdist i0)).

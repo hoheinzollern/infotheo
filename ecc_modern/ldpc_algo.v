@@ -3,7 +3,8 @@
 From HB Require Import structures.
 From Stdlib Require Import Init.Wf Recdef.
 From mathcomp Require Import all_boot perm zmodp matrix ssralg ssrnum.
-From mathcomp Require Import Rstruct reals ring lra.
+From mathcomp Require Import Rstruct reals.
+From mathcomp.algebra_tactics Require Import ring lra.
 Require Import f2 subgraph_partition tanner.
 Require Import fdist channel pproba linearcode ssralg_ext.
 Require Import tanner_partition summary ldpc checksum.
