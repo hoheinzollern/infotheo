@@ -304,7 +304,7 @@ have main_real : (v *m A *m v^T) (@ord0 0) (@ord0 0)
   move: mainC.
   by rewrite -rmorphM lecR.
 rewrite /RQ.
-rewrite ler_pdivrMr; last exact: qf_self_pos v0.
+rewrite ler_pdivrMr; first exact: qf_self_pos v0.
 exact: main_real.
 Qed.
 
