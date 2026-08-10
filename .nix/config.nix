@@ -8,12 +8,12 @@
   ## either using nixpkgs data or the overlays located in `.nix/rocq-overlays`
   ## and `.nix/coq-overlays`
   ## Will determine the default main-job of the bundles defined below
-  attribute = "mathcomp-infotheo";
+  attribute = "coq-infotheo";
 
   ## The attribute for coq compat shim, default to attribute
   ## set this when you need both to differ
   ## (for instance "rocq-elpi" and "coq-elpi")
-  # coq-attribute = "mathcomp-infotheo";
+  # coq-attribute = "coq-infotheo";
 
   ## Set this when the package has no rocqPackages version yet
   ## (either in nixpkgs or in .nix/rocq-overlays)
@@ -43,7 +43,7 @@
 
   ## select an entry to build in the following `bundles` set
   ## defaults to "default"
-  default-bundle = "9.1";
+  default-bundle = "9.2";
 
   ## write one `bundles.name` attribute set per
   ## alternative configuration
@@ -127,7 +127,8 @@
       ## on the rocqPackages side the toolbox would fabricate a bogus package
       ## for it, which shadows the real one during dependency resolution
       common-coq-bundle = common-bundle // {
-          robot-rocq.override.version = "master";
+          ## pinned to the master commit our compat patch applies to
+          robot-rocq.override.version = "4e8bedb43bd20f379a27a6ef622d09912fe23953";
           robot-rocq.job = false;
           ## needed by robot-rocq; nixpkgs marks these broken for mathcomp dev
           mathcomp-real-closed.override.version = "master";
@@ -173,6 +174,59 @@
 	  stdlib.job = false;
           coq-elpi.override.version = "master";
 	  coq-elpi.job = false;
+        } ;
+      };
+
+      ## default bundle: latest *released* versions
+      ## (Rocq 9.2.0, mathcomp 2.6.0, analysis 1.17.0, released satellites)
+      "9.2" =
+        let released = {
+          hierarchy-builder.override.version = "v1.10.3";
+          mathcomp.override.version = "mathcomp-2.6.0";
+          mathcomp-bigenough.override.version = "1.0.4";
+          mathcomp-bigenough.job = false;
+          mathcomp-finmap.override.version = "2.2.4";
+          mathcomp-finmap.job = false;
+          mathcomp-classical.override.version = "1.17.0";
+          mathcomp-classical.job = false;
+          mathcomp-reals.override.version = "1.17.0";
+          mathcomp-reals.job = false;
+          mathcomp-analysis.override.version = "1.17.0";
+          mathcomp-analysis.job = false;
+          mathcomp-reals-stdlib.override.version = "1.17.0";
+          mathcomp-reals-stdlib.job = false;
+          coquelicot.override.version = "master";
+          coquelicot.job = false;
+          interval.override.version = "master";
+          interval.job = false;
+          micromega-plugin.override.version = "master";
+          micromega-plugin.job = false;
+        }; in {
+        rocqPackages = released // {
+          rocq-core.override.version = "9.2";
+          rocq-core.job = false;
+          stdlib.override.version = "V9.2.0";
+	  stdlib.job = false;
+          rocq-elpi.override.version = "v3.5.0";
+	  rocq-elpi.job = false;
+        } ;
+        coqPackages = released // {
+          coq.override.version = "9.2";
+          coq.job = false;
+          stdlib.override.version = "V9.2.0";
+	  stdlib.job = false;
+          coq-elpi.override.version = "v3.5.0";
+	  coq-elpi.job = false;
+          ## pinned to the master commit our compat patch applies to
+          robot-rocq.override.version = "4e8bedb43bd20f379a27a6ef622d09912fe23953";
+          robot-rocq.job = false;
+          mathcomp-real-closed.override.version = "2.0.6";
+          mathcomp-real-closed.job = false;
+          ## no released algebra-tactics builds against mathcomp 2.6.0 yet
+          mathcomp-algebra-tactics.override.version = "master";
+          mathcomp-algebra-tactics.job = false;
+          mathcomp-zify.override.version = "1.7.0+2.4+9.0";
+          mathcomp-zify.job = false;
         } ;
       };
     };

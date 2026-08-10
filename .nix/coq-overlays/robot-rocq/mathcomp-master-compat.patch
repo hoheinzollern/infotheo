@@ -1,0 +1,328 @@
+diff --git a/derive_matrix.v b/derive_matrix.v
+index 9b760f8..e66fe2b 100644
+--- a/derive_matrix.v
++++ b/derive_matrix.v
+@@ -402,10 +402,13 @@ Hypothesis derivable_M : forall t, derivable_mx M t 1.
+ 
+ Lemma ang_vel_mx_is_so t : ang_vel_mx t \is 'so[ R ]_3.
+ Proof.
+-have : (fun t => (M t)^T * M t) = cst 1.
+-  rewrite funeqE => x; by rewrite -orthogonal_inv // mulVr // orthogonal_unit.
++have : (fun t => (M t)^T *m M t) = cst 1.
++  rewrite funeqE => x; by rewrite mulmxE -orthogonal_inv // mulVr // orthogonal_unit.
+ move/(congr1 (fun f => derive1mx f t)); rewrite derive1mx_cst -[cst 0 _]/(0).
+-rewrite derive1mxM -?trmx_derivable// derive1mx_tr.
++rewrite (derive1mxM (M:=fun x => (M x)^T) (N:=M)).
++  by rewrite -trmx_derivable; exact: derivable_M.
++  exact: derivable_M.
++rewrite derive1mx_tr.
+ move=> /eqP; rewrite addr_eq0 => /eqP H.
+ by rewrite antiE /ang_vel_mx trmx_mul trmxK H opprK.
+ Qed.
+@@ -430,7 +433,7 @@ Lemma derive1mx_rot (p' : 'rV[R^o]_3 (* constant vector *)) :
+   let p := fun t => p' *m M t in
+   forall t, derive1mx p t = ang_vel t *v p t.
+ Proof.
+-move=> p t; rewrite /p derive1mxM.
++move=> p t; rewrite /p (derive1mxM (M:=fun _ => p') (N:=M)).
+ - rewrite /derivable_mx => i j; exact: ex_derive.
+ - exact: derivable_M.
+ rewrite derive1mx_cst mul0mx add0r derive1mx_ang_vel mulmxA.
+diff --git a/euclidean.v b/euclidean.v
+index 2a6bc03..8d0b519 100644
+--- a/euclidean.v
++++ b/euclidean.v
+@@ -5,6 +5,7 @@ From mathcomp Require Import sesquilinear.
+ From mathcomp Require Import closed_field polyrcf matrix mxalgebra mxpoly zmodp.
+ From mathcomp Require Import realalg complex fingroup perm.
+ From mathcomp Require Import reals.
++From mathcomp.algebra_tactics Require Import ring.
+ Require Import ssr_ext.
+ 
+ (**md**************************************************************************)
+@@ -1552,42 +1553,42 @@ Lemma vecij : 'e_0 *v 'e_1 = 'e_2%:R :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ Lemma vecik : 'e_0 *v 'e_2%:R = - 'e_1 :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ Lemma vecji : 'e_1 *v 'e_0 = - 'e_2%:R :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ Lemma vecjk : 'e_1 *v 'e_2%:R = 'e_0%:R :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ Lemma vecki : 'e_2%:R *v 'e_0 = 'e_1 :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ Lemma veckj : 'e_2%:R *v 'e_1 = - 'e_0 :> 'rV[T]__.
+ Proof.
+ apply/matrixP => i j; rewrite /crossmul; unlock.
+ rewrite ord1 !mxE /= det_mx33 !mxE.
+-by case: j => [] [|[|[|//]]] /=; Simp.r.
++by case: j => [] [|[|[|//]]] /= ?; ring.
+ Qed.
+ 
+ End properties_of_canonical_vectors.
+diff --git a/quaternion.v b/quaternion.v
+index 23833c5..390979c 100644
+--- a/quaternion.v
++++ b/quaternion.v
+@@ -1004,9 +1004,8 @@ do 2 rewrite (addrCA _ (_ *: v)); congr (_ + _).
+ do 2 rewrite (addrCA _ (_ *: x.2 *+ 2)).
+ rewrite dotmulDr scalerDl mulrnDl -addrA addrCA; congr (_ + _).
+ rewrite dotmulvZ -scalerA scalerMnr.
+-  by rewrite !scalerMnr.
+ congr (_ + _).
+-rewrite scalerMnr.
++rewrite [in LHS]scalerMnr.
+ rewrite 2!(scalerMnr x.1) scalerA mulrC -scalerA -(scalerMnr k) -scalerDr -mulrnDl.
+ congr (_ *: (_ *+ _)).
+ by rewrite linearD /= linearZ /=.
+diff --git a/rot.v b/rot.v
+index 2292aea..72aa4a7 100644
+--- a/rot.v
++++ b/rot.v
+@@ -7,6 +7,7 @@ From mathcomp Require Import closed_field polyrcf matrix mxalgebra mxpoly zmodp.
+ From mathcomp Require Import realalg reals complex.
+ From mathcomp Require Import interval trigo fingroup perm.
+ From mathcomp Require Import sesquilinear.
++From mathcomp.algebra_tactics Require Import ring.
+ Require Import extra_trigo.
+ Require Import ssr_ext euclidean skew vec_angle frame.
+ 
+@@ -862,16 +863,9 @@ rewrite !(mulrBr, mulrBl, mulrDr, mulrDl, mul1r, mulr1).
+ rewrite -expr2 -exprSr !addrA !scalerN.
+ rewrite ['X * _ * 'X]mulrAC -expr2 !['X * _]mulrC !['X^2 * _]mulrC.
+ rewrite [_* 'X * _]mulrAC -rmorphM /= -expiD subrr expi0 mul1r.
+-rewrite -!addrA; congr (_ + _); rewrite !(addrA, opprB, opprD).
+-rewrite [in RHS](ACl (1 * 3 * 7 * 2 * 4 * 5 * 6))/=.
+-rewrite -(addrA (- 'X^2)) -opprD -mulrDl -rmorphD/= expiDexpiN.
+-rewrite -addrA -3![in RHS]addrA; congr (_ + _).
+-  by rewrite !rmorphD/= !scalerDl/= scale1r !opprD mulrDl opprD/= addrA mul_polyC.
+-rewrite !addrA [in RHS](ACl (1 * 2 * 4 * 3))/=.
+-congr (_ - _).
+-rewrite [RHS]addrAC -mulrDl -rmorphD/= expiDexpiN.
+-rewrite -(addrA 1) rmorphD/= scalerDl scale1r addrC; congr (_ + _).
+-by rewrite mul_polyC.
++have -> : (1 + cos a + cos a)%:C%C = 1 + (expi a + expi (- a)) :> T[i].
++  by rewrite -addrA rmorphD rmorph1 expiDexpiN.
++by rewrite -!mul_polyC; ring.
+ Qed.
+ 
+ Lemma Rz_eskew a : Rz a = `e^(a, 'e_2%:R).
+@@ -1575,7 +1569,7 @@ Lemma Mi2_1 i : (`| M i 2%:R | == 1) = (M i 0 == 0) && (M i 1 == 0).
+ Proof.
+ move/eqP: (sqr_Mi2E i) => MO'.
+ apply/idP/idP => [Mi2|/andP[/eqP Mi0 /eqP Mi1]]; last first.
+-  move: MO'; by rewrite Mi0 Mi1 expr2 mulr0 addr0 eq_sym subr_eq add0r eq_sym sqr_norm_eq1.
++  move: MO'; by rewrite Mi0 Mi1 [0 ^+ 2]expr2 mulr0 addr0 eq_sym subr_eq add0r eq_sym sqr_norm_eq1.
+ move: MO'; rewrite -(sqr_normr (M i 2%:R)) (eqP Mi2) expr1n subrr.
+ by rewrite paddr_eq0 ?sqr_ge0 // => /andP[]; rewrite 2!sqrf_eq0 => /eqP -> /eqP ->; rewrite eqxx.
+ Qed.
+@@ -1604,7 +1598,7 @@ Lemma M2j_1 j :(`| M 2%:R j | == 1) = (M 0 j == 0) && (M 1 j == 0).
+ Proof.
+ move/eqP: (sqr_M2jE j) => MO'.
+ apply/idP/idP => [Mi2|/andP[/eqP Mi0 /eqP Mi1]]; last first.
+-  move: MO'; by rewrite Mi0 Mi1 expr2 mulr0 addr0 eq_sym subr_eq add0r eq_sym sqr_norm_eq1.
++  move: MO'; by rewrite Mi0 Mi1 [0 ^+ 2]expr2 mulr0 addr0 eq_sym subr_eq add0r eq_sym sqr_norm_eq1.
+ move: MO'; rewrite -(sqr_normr (M 2%:R j)) (eqP Mi2) expr1n subrr.
+ by rewrite paddr_eq0 ?sqr_ge0 // => /andP[]; rewrite 2!sqrf_eq0 => /eqP -> /eqP ->; rewrite eqxx.
+ Qed.
+@@ -1987,7 +1981,6 @@ apply/matrix3P/and9P; split;
+ - by apply/eqP; nsatz.
+ - by apply/eqP; nsatz.
+ - by apply/eqP; nsatz.
+-- by apply/eqP; nsatz.
+ by apply/eqP; nsatz.
+ Qed.
+ 
+diff --git a/screw.v b/screw.v
+index 45c8ca7..8596af4 100644
+--- a/screw.v
++++ b/screw.v
+@@ -5,6 +5,7 @@ From mathcomp Require Import closed_field polyrcf matrix mxalgebra mxpoly zmodp.
+ From mathcomp Require Import realalg complex fingroup perm.
+ From mathcomp Require Import sesquilinear.
+ From mathcomp Require Import interval reals trigo.
++From mathcomp.algebra_tactics Require Import ring.
+ Require Import ssr_ext euclidean skew vec_angle frame rot rigid extra_trigo.
+ 
+ (**md**************************************************************************)
+@@ -201,8 +202,8 @@ split => [u'|u] a x y /=.
+   rewrite !scalerBr mulrDl mulrDr opprD.
+   rewrite scalerAl -!addrA.
+   rewrite -scalerAr -scalerAl; congr (_ + _).
+-  rewrite [RHS]addrCA; congr (_ + _).
+   by rewrite scalerAl.
++by rewrite (addrCA (u * y)).
+ Qed.
+ 
+ HB.instance Definition _ :=
+@@ -887,17 +888,9 @@ rewrite (scalerN (2%:R^-1 * _)) opprK (scalerA (2%:R^-1 * _)).
+ rewrite -!mulrA mulVf ?mulr1.
+   rewrite subr_eq0 eq_sym; apply: contra saD0 => /eqP caE.
+   by rewrite cos1sin0 // caE normr1.
+-rewrite -!addrA addrCA addrC !addrA.
+-rewrite scalerA (mulrC (2^-1) (sin a)) -!addrA subrr addr0 !addrA.
+-rewrite (mulrC 2%:R^-1).
+-rewrite -scalerA.
+-rewrite scalerBl scale1r opprB.
+-rewrite scalerDl scale1r opprD !addrA addrC !addrA.
+-rewrite (addrC (- (cos a *: _))) subrr add0r.
+-rewrite addrAC.
+-rewrite -scaleNr -scalerDl.
+-rewrite -opprD -div1r -splitr scaleN1r.
+-by rewrite addrC subrr.
++set A := (_ ^+ 2); set B := \S( w ).
++apply/matrixP => i j; rewrite !mxE.
++by field.
+ Qed.
+ 
+ Lemma etwist_is_onto_SE (f : 'M[T]_4) : f \is 'SE3[T] ->
+@@ -1011,25 +1004,13 @@ case/boolP : (a == pi) => [/eqP ->|api].
+   rewrite cot_half_angle sinpi cospi !(mulr0,addr0,subr0,oppr0,add0r,mul0r,mulrN1).
+   rewrite mulrN subrr.
+   by rewrite mulrC.
++have sa0 : sin a != 0 by rewrite sin_eq0_Npipi // negb_or a0 api.
++have ca1 : 1 - cos a != 0 by rewrite subr_eq0 eq_sym cos_eq1_Npipi //.
+ congr row3; last first.
+-  rewrite mulrN mulrBl opprB -!addrA addrC !addrA -mulrA subrK.
+-  rewrite cot_half_angle' -!mulrA (mulrCA _ a2) mulVf ?mulr1.
+-    by rewrite sin_eq0_Npipi // negb_or a0 api.
+-  rewrite addrC -mulrBr opprD mulrDl mul1r -!addrA (addrCA _ (- a1)) (mulrC _ a2) subrr addr0.
+-  by rewrite -mulNr opprB mulrC.
+-rewrite mulrN mulrBl opprB -!addrA addrC !addrA -mulrA subrK.
+-rewrite -(mulrA _ (cot _ )) -mulrDr.
+-rewrite invfM [_ / (1 - cos _)]mulrC.
+-rewrite ![in RHS]mulrA [in RHS]mulrC; congr (_ * _).
+-rewrite -[in RHS]mulrA -cot_half_angle.
+-rewrite mulrDr addrCA [in RHS]mulrDl (mulrC _ a1); congr (_ + _).
+-rewrite mulrCA -mulrDr; congr (_ * _).
+-apply/eqP.
+-rewrite eq_sym -subr_eq.
+-rewrite -{1}(mulr1 (cot (a / 2%:R))) -mulrBr.
+-rewrite cot_half_angle -mulrA mulVf ?mulr1 //.
+-rewrite subr_eq0.
+-by apply: contra a0; rewrite eq_sym cos_eq1_Npipi.
++  rewrite cot_half_angle'.
++  by field.
++rewrite cot_half_angle.
++by field.
+ Qed.
+ 
+ End example.
+@@ -1129,8 +1110,9 @@ rewrite scalerDr.
+ rewrite 2!scalerA.
+ rewrite [in X in _ = X + _]mulrA.
+ rewrite [in X in _ = X + _]mulrC.
+-rewrite -(mulrA (a * h)) divrr ?mulr1; first by rewrite unitfE expf_eq0 /= enorm_eq0.
+-rewrite mulrC -[LHS]addr0.
++rewrite (_ : `| w |_e ^+ 2 * (`| w |_e ^- 2 * a * h) = h * a).
++  by field; rewrite enorm_eq0.
++rewrite -[LHS]addr0.
+ congr (_ + _).
+ rewrite mulmxBr mulmx1.
+ rewrite -rodriguesP /rodrigues.
+@@ -1714,9 +1696,9 @@ congr (@block_mx _ 1 0 3 3).
+   rewrite (linearNr _ (w_a *m (EuclideanMotion.rot g_ab)^T))/=.
+   rewrite opprK.
+   rewrite -spin_similarity; first by rewrite rotationV EuclideanMotion.rotP.
+-  rewrite trmxK mulrA mulNr -mulmxE mulmxA orthogonal_tr_mul ?mul1mx.
++  rewrite trmxK mulNr !mulrA -!mulmxE orthogonal_tr_mul ?mul1mx.
+     by rewrite rotation_sub // EuclideanMotion.rotP.
+-  rewrite mulNmx mulmxN mulmxA spinE -mulmxr_crossmulr_SO.
++  rewrite mulmxN mulmxA spinE -mulmxr_crossmulr_SO.
+     by rewrite rotationV EuclideanMotion.rotP.
+   by rewrite (@lieC _ (vec3 T)) /= linearNl.
+ - by rewrite /map_v coortrans_vectorE EuclideanMotion.rot_inv.
+diff --git a/skew.v b/skew.v
+index 3b2819d..1c82874 100644
+--- a/skew.v
++++ b/skew.v
+@@ -868,46 +868,7 @@ Lemma cayleyE (a b c : R) : let r := `|row3 a b c|_e in
+   (row3 (cayley10 a b c) (cayley11 a b c) (cayley12 a b c))
+   (row3 (cayley20 a b c) (cayley21 a b c) (cayley22 a b c)))^T.
+ Proof.
+-move=> r.
+-have r12 : 1 + r ^+ 2 != 0 by rewrite paddr_eq0//= ?sqr_ge0// ?ler01// oner_eq0.
+-rewrite trmx_col_mx3_row3.
+-rewrite /cayley inv1BME; apply/matrix3P/and9P; split.
+-- rewrite -/r.
+-  rewrite !(mxE,sum3E); Simp.r.
+-  rewrite !spinij; Simp.r => /=.
+-  rewrite !mxE /=.
+-  rewrite /cayley00.
+-  apply/eqP/(mulfI r12).
+-  rewrite !mulrDr !mulr1 !mulrA !divff//; Simp.r => /=.
+-  rewrite mulrDr !mulrA !divff//; Simp.r => /=.
+-  rewrite mulrDr mulrN !mulrA !divff//; Simp.r => /=.
+-  rewrite sqr_norm_row3.
+-  rewrite !expr2.
+-  by field.
+-- rewrite -/r.
+-  rewrite !(mxE,sum3E); Simp.r.
+-  rewrite !spinij; Simp.r => /=.
+-  rewrite !mxE/=.
+-  rewrite /cayley10.
+-  apply/eqP/(mulfI r12).
+-  rewrite !mulrDr !mulrA !divff//.
+-  rewrite !mulrDr mulr1 !mulrA !divff//; Simp.r => /=.
+-  rewrite mulrDr mulrN !mulrA !divff//; Simp.r => /=.
+-  rewrite sqr_norm_row3 !expr2.
+-  by field.
+-- rewrite -/r.
+-  rewrite !(mxE,sum3E); Simp.r.
+-  rewrite !spinij; Simp.r => /=.
+-  rewrite !mxE/=.
+-  rewrite /cayley20.
+-  apply/eqP/(mulfI r12).
+-  rewrite !mulrDr !mulrA !divff//.
+-  rewrite 2!mulrN !mulrA !mulrDr mulr1.
+-  rewrite !mulrN !mulrA !divff//; Simp.r => /=.
+-  rewrite -mulrA divff//; Simp.r => /=.
+-  rewrite sqr_norm_row3 !expr2.
+-  by field.
+-(* TODO: complete *)
++(* TODO: complete; proof script removed, it broke with Rocq 9.2/mathcomp 2.6 *)
+ Abort.
+ 
+ End cayley_transform.
+diff --git a/vec_angle.v b/vec_angle.v
+index 0ea351d..9c8ceb6 100644
+--- a/vec_angle.v
++++ b/vec_angle.v
+@@ -112,7 +112,7 @@ Proof.
+ move=> k_lt0; rewrite /vec_angle; case: eqP => // /eqP u0.
+ rewrite scaler_eq0 (negPf (ltr0_neq0 _)) //= oppr_eq0.
+ rewrite dotmulvZ enormZ ltr0_norm// enormN dotmulvN mulrCA -mulf_div.
+-rewrite invrN mulrN divff ?(mulN1r, mulNr) //.
++rewrite invrN mulrN divff ?(mulN1r, mulNr, mul1r) //.
+ by rewrite ltr0_neq0.
+ Qed.
+ 
